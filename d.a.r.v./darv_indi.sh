@@ -32,7 +32,7 @@ photoSlewSpeed="2x"      # 1x, 2x,3x 4x (with simulator, use indi_getprop for al
 
 # Declination Offset (degree), use - if region is not visible
 decOffsetNS=0
-decOffsetWE=5
+decOffsetWE=10
 
 # =======================================================================
 
