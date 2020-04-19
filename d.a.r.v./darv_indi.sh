@@ -31,11 +31,23 @@ fi
 
 
 #######################################
-# zentyl
+# zenity
+if zenity 	--question \
+		--title "D.A.R.V." \
+		--text "You can now precisly position or select a special star, focus you cam etc. before processing.\
+			\n\nThe script will then will shoot a foto and move West / East in this time according to your settings in the scripts header (Slew-Speed: $photoSlewSpeed, $photoTime, .\
+			\n\nAbort (esc) or continue (Enter)?"
+then
+	echo Continue ...
+else
+	exit 1
+fi
+
 # do  centre and track???
 #######################################
 
 # init
+actSlewRate="$(indi_getprop  | grep SLEW_RATE | grep On | cut -d "=" -f 1)"
 indi_setprop "${indi_telescope}.TELESCOPE_ABORT_MOTION.ABORT=On"
 indi_setprop "${indi_telescope}.TELESCOPE_TRACK_STATE.TRACK_ON=Off"
 indi_setprop "${indi_telescope}.TELESCOPE_TRACK_STATE.TRACK_OFF=On"
@@ -125,6 +137,8 @@ indi_setprop "${indi_telescope}.TELESCOPE_ABORT_MOTION.ABORT=On"
 echo "Reenable Tracking."
 indi_setprop "${indi_telescope}.TELESCOPE_TRACK_STATE.TRACK_ON=On"
 indi_setprop "${indi_telescope}.TELESCOPE_TRACK_STATE.TRACK_OFF=Off"
+echo "Renenable old slew speed: ${actSlewRate}"
+${actSlewRate}=On
 
 
 exit 0
