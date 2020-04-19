@@ -51,7 +51,7 @@ These settings must be altered at the beginning of the script:
  
 #### Photo parameters for d.a.r.v.
 
-    photoTime=10             # exposure time alltogether (point,  move west, move east) - best: 125 sec
+    photoTime=10             # exposure time move west, move east) - best: 120 sec
     pointTime=2              # time to make a "point" at the picture (movement stopped) - best  5 sec
     photoSlewSpeed="2x"      # 1x, 2x,3x 4x (with simulator, use indi_getprop for all actual settings) 
 
