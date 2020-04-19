@@ -10,7 +10,7 @@
 #   This program is free software; you can redistribute it and/or modify  #
 #   it under the terms of the GNU General Public License as published by  #
 #   the Free Software Foundation; either version 2 of the License, or     #
-#   (at your option) any later version.                                   #
+#   (at your option) any  later version.                                  #
 #                                                                         #
 # =========================================================================
 
@@ -30,6 +30,10 @@ photoTime=10             # exposure time alltogether (point,  move west, move ea
 pointTime=2              # time to make a "point" at the picture (movement stopped) - best  5 sec
 photoSlewSpeed="2x"      # 1x, 2x,3x 4x (with simulator, use indi_getprop for all actual settings)
 
+# Declination Offset (degree), use - if region is not visible
+decOffsetNS=1
+decOffsetWE=1
+
 # =======================================================================
 
 
@@ -39,7 +43,7 @@ photoSlewSpeed="2x"      # 1x, 2x,3x 4x (with simulator, use indi_getprop for al
 if [ "$1" == "" ] 
 then 
 	echo "INDI D.A.R.V. script"
-	echo "Please specify s(outh), e(ast) or w(est) - single character only."
+	echo "Please specify s(outh), n(north), e(ast) or w(est) - single character only."
 	exit 1
 fi
 
@@ -76,7 +80,18 @@ then
 	south=$(date +%I)
 	actMinute=$(date +%M)
 	actSecond=$(date +%S)
-	indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=$south:$actMinute:$actSecond;0"
+	indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=$south:$actMinute:$actSecond;$(( 0+$decOffsetNS ))"
+
+fi
+
+if [ "$1" == "n" ] 
+then
+
+	# NORTH
+	south=$(date +%I)
+	actMinute=$(date +%M)
+	actSecond=$(date +%S)
+	indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=$south:$actMinute:$actSecond;$(( 0+$decOffsetNS ))"
 
 fi
 
@@ -84,10 +99,21 @@ if [ "$1" == "e" ]
 then
 
 	# EAST
-	east=$(( $south-+6 ))
+	east=$(( $south+6 ))
 	actMinute=$(date +%M)
 	actSecond=$(date +%S)
-	indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=$east:$actMinute:$actSecond;0"
+	indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=$east:$actMinute:$actSecond;$(( 0+$decOffsetWE ))"
+
+fi 
+
+if [ "$1" == "w" ]
+then
+
+	# WEST
+	east=$(( $south-6 ))
+	actMinute=$(date +%M)
+	actSecond=$(date +%S)
+	indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=$east:$actMinute:$actSecond;$(( 0+$decOffsetWE ))"
 
 fi 
 
@@ -108,7 +134,7 @@ done
 
 
 # ===================================================
-# TAKE D.A.R.V. PHOTO 
+# TAKE D.A.R.V. PHOTO decOffsetN
 
 # calcutlations for photo lenth
 moveTime=$(( $photoTime+$pointTime ))
@@ -152,7 +178,7 @@ echo "Reenable Tracking."
 indi_setprop "${indi_telescope}.TELESCOPE_TRACK_STATE.TRACK_ON=On"
 indi_setprop "${indi_telescope}.TELESCOPE_TRACK_STATE.TRACK_OFF=Off"
 echo "Renenable old slew speed: ${actSlewRate}"
-${actSlewRate}=On
+"${actSlewRate}=On"
 
 
 exit 0
