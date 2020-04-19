@@ -169,7 +169,7 @@ echo "Reenable Tracking."
 indi_setprop "${indi_telescope}.TELESCOPE_TRACK_STATE.TRACK_ON=On"
 indi_setprop "${indi_telescope}.TELESCOPE_TRACK_STATE.TRACK_OFF=Off"
 echo "Renenable old slew speed: ${actSlewRate}"
-"${actSlewRate}=On"
+indi_setprop "${actSlewRate}=On"
 
 
 exit 0
