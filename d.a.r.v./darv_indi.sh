@@ -1,6 +1,20 @@
 #/bin/bash
 # bash script for indi using d.a.r.v.
-# https://www.cloudynights.com/articles/cat/articles/darv-drift-alignment-by-robert-vice-r2760
+
+#   intial version		 : 19.04.2020
+# 	copyright            : (C) 2020 by Ael Pospischil
+#   email                : apos@blue-it.org
+
+# =========================================================================
+#                                                                         #
+#   This program is free software; you can redistribute it and/or modify  #
+#   it under the terms of the GNU General Public License as published by  #
+#   the Free Software Foundation; either version 2 of the License, or     #
+#   (at your option) any later version.                                   #
+#                                                                         #
+# =========================================================================
+
+# Method: https://www.cloudynights.com/articles/cat/articles/darv-drift-alignment-by-robert-vice-r2760
 # Read: https://indilib.org/develop/developer-manual/104-scripting.html 
 
 # =======================================================================
@@ -20,7 +34,7 @@ photoSlewSpeed="2x"      # 1x, 2x,3x 4x (with simulator, use indi_getprop for al
 
 
 
-# =======================================================================
+# ===========================https://indilib.org/develop/developer-manual/104-scripting.html============================================
 # MAIN PROGRAM
 if [ "$1" == "" ] 
 then 
