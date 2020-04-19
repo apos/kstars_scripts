@@ -32,7 +32,7 @@ photoSlewSpeed="2x"      # 1x, 2x,3x 4x (with simulator, use indi_getprop for al
 
 # Declination Offset (degree), use - if region is not visible
 decOffsetNS=0
-decOffsetWE=1
+decOffsetWE=5
 
 # =======================================================================
 
@@ -43,7 +43,7 @@ decOffsetWE=1
 if [ "$1" == "" ] 
 then 
 	echo "INDI D.A.R.V. script"
-	echo "Please specify s(outh), n(north), e(ast) or w(est) - single character only."
+	echo "Please specify s(outh), e(ast) or w(est) - single character only."
 	exit 1
 fi
 
@@ -73,27 +73,18 @@ indi_setprop "${indi_telescope}.TELESCOPE_SLEW_RATE.4x=On"
 indi_setprop "${indi_telescope}.ON_COORD_SET.SLEW=On"
 
 
+south=$(date +%I)
+
 if [ "$1" == "s" ] 
 then
 
 	# SOUTH
-	south=$(date +%I)
 	actMinute=$(date +%M)
 	actSecond=$(date +%S)
 	indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=$south:$actMinute:$actSecond;$(( 0+$decOffsetNS ))"
 
 fi
 
-if [ "$1" == "n" ] 
-then
-
-	# NORTH
-	south=$(date +%I)
-	actMinute=$(date +%M)
-	actSecond=$(date +%S)
-	indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=$south:$actMinute:$actSecond;$(( 0+$decOffsetNS ))"
-
-fi
 
 if [ "$1" == "e" ]
 then

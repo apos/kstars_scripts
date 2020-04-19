@@ -24,12 +24,6 @@ First of all all all motions are aborted. Then the script moves the mount _near_
 The script runs completely independent of a runnings EKOS instance, hence it uses the same running instance of the standard indi server. 
 
 
-## Principals and the method of D.A.R.V.  
-
- * D.A.R.V (Drift Alignment by Robert Vice) / Jan 06 2013
- * https://www.cloudynights.com/articles/cat/articles/darv-drift-alignment-by-robert-vice-r2760 
-
-
 ## What the script does, what not
  
  * moves to south, east, west near DEC 0°.
@@ -38,9 +32,17 @@ The script runs completely independent of a runnings EKOS instance, hence it use
  * uses a given time for the exposure, the pause for the "star dot" and the slew speed during the exposure
 
  * Does _not_ search a star for you 
+ * The script has no support for SCP (but this should be not problem)
 
 
-The settings must be altered at the beginning of the script:
+## Principals and the method of D.A.R.V.  
+
+ * D.A.R.V (Drift Alignment by Robert Vice) / Jan 06 2013
+ * https://www.cloudynights.com/articles/cat/articles/darv-drift-alignment-by-robert-vice-r2760 
+
+## Setup
+
+These settings must be altered at the beginning of the script:
 
 #### Scope and cam
 
@@ -56,4 +58,4 @@ The settings must be altered at the beginning of the script:
 #### Declination Offset (degree) - use, if region is not visible
 
     decOffsetNS=0
-    decOffsetWE=1
+    decOffsetWE=5
