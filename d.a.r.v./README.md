@@ -56,4 +56,4 @@ The settings must be altered at the beginning of the script:
 #### Declination Offset (degree) - use, if region is not visible
 
     decOffsetNS=0
-    decOffsetWE=3
+    decOffsetWE=1

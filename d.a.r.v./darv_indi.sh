@@ -31,7 +31,7 @@ pointTime=2              # time to make a "point" at the picture (movement stopp
 photoSlewSpeed="2x"      # 1x, 2x,3x 4x (with simulator, use indi_getprop for all actual settings)
 
 # Declination Offset (degree), use - if region is not visible
-decOffsetNS=1
+decOffsetNS=0
 decOffsetWE=1
 
 # =======================================================================
