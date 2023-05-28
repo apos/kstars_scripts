@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 # bash script for indi using d.a.r.v.
 
 #   intial version		 : 19.04.2020
@@ -35,28 +35,7 @@ decOffsetNS=0
 decOffsetWE=10
 
 # =======================================================================
-# Calcutate siderial time (asked ChatGPT: "wie kann man mit der bash und dem kommando date die sternzeit berechnen"
-
-# Aktuelle UTC-Zeit abrufen
-utc_time=$(date -u +"%Y-%m-%dT%H:%M:%S")
-
-# UTC-Zeit in das benötigte Format für die Sternzeitberechnung umwandeln
-year=$(date -u +"%Y")
-month=$(date -u +"%m")
-day=$(date -u +"%d")
-hour=$(date -u +"%H")
-minute=$(date -u +"%M")
-second=$(date -u +"%S")
-utc_datetime="${year}-${month}-${day} ${hour}:${minute}:${second}"
-
-# Sternzeitberechnung mit 'bc'
-sidereal_time=$(echo "scale=2; ((2.6779094 + 0.0657098242 * ${year} + 1.00273791 * (Julian date)) % 24)" | bc -l)
-
-
-# =======================================================================
-# Berechnung der Rektaszension bei DEC 0
-
-# Längengrad des Standorts in Stunden umrechnen
+# Standortinformationen anhand der IP-Adresse abrufen
 
 # IP-Adresse des Geräts abrufen
 ip_address=$(curl -s https://api.ipify.org)
@@ -71,18 +50,54 @@ city=$(echo "$location" | jq -r '.city')
 country=$(echo "$location" | jq -r '.country_name')
 
 echo "Aktueller Standort:"
+echo "-------------------"
 echo "Breitengrad: $latitude"
 echo "Längengrad: $longitude"
 echo "Stadt: $city"
 echo "Land: $country"
+echo "-------------------"
 
 
 longitude_hours=$(echo "scale=2; ${longitude} / 15" | bc -l)
 
+# =======================================================================
 # Rektaszension berechnen
-ra=$(echo "scale=2; (${sidereal_time} - ${longitude_hours}) % 24" | bc -l)
 
-echo "Rektaszension (UTC): ${ra} Stunden"
+# Aktuelle UTC-Zeit abrufen
+utc_time=$(date -u +"%Y-%m-%dT%H:%M:%S")
+
+# UTC-Zeit in das benötigte Format für die Sternzeitberechnung umwandeln
+year=$(date -u +"%Y")
+month=$(date -u +"%m")
+day=$(date -u +"%d")
+hour=$(date -u +"%H")
+minute=$(date -u +"%M")
+second=$(date -u +"%S")
+utc_datetime="${year}-${month}-${day} ${hour}:${minute}:${second}"
+
+# Julianisches Datum berechnen
+julian_date=$(echo "scale=10; ( $(date -u -d "${utc_datetime}" "+%s") / 86400 ) + 2440587.5" | bc -l)
+
+# Sternzeitberechnung mit 'bc'
+sidereal_time=$(echo "scale=10; ((2.6779094 + 0.0657098242 * ${year} + 1.00273791 * (${julian_date})) % 24)" | bc -l)
+
+# Längengrad des Standorts in Stunden umrechnen
+#longitude=10.0
+longitude_hours=$(echo "scale=10; ${longitude} / 15" | bc -l)
+
+# Rektaszension berechnen
+ra_decimal=$(echo "scale=10; (${sidereal_time} - ${longitude_hours}) % 24" | bc -l)
+
+# Rektaszension in Stunden, Minuten und Sekunden umrechnen
+ra_hours=$(printf "%02d" $(echo "${ra_decimal}" | awk -F"." '{print ($1)}'))
+ra_minutes=$(printf "%02d" $(echo "${ra_decimal}" | awk -F"." '{print ($2 * 60 / 10)}'))
+ra_seconds=$(printf "%02d" $(echo "${ra_decimal}" | awk -F"." '{print ($2 * 60 % 10 * 60 / 10)}'))
+
+echo "Rektaszension (UTC): ${ra_hours}:${ra_minutes}:${ra_seconds} Stunden"
+
+
+
+
 
 
 # =======================================================================
@@ -113,12 +128,16 @@ fi
 
 #######################################
 # init
+indi_setprop "${indi_telescope}.GEOGRAPHIC_COORD.LAT;LONG=${longitude};${latitude}" && echo "LONG/LAT set OK."
 actSlewRate="$(indi_getprop | grep SLEW_RATE | grep On | cut -d "=" -f 1)"
 indi_setprop "${indi_telescope}.TELESCOPE_ABORT_MOTION.ABORT=On"
 indi_setprop "${indi_telescope}.TELESCOPE_TRACK_STATE.TRACK_ON=On"
+indi_setprop "${indi_telescope}.TELESCOPE_TRACK_STATE.TRACK_OFF=Off"
 indi_setprop "${indi_telescope}.TELESCOPE_SLEW_RATE.4x=Off"
-# indi_setprop "${indi_telescope}.ON_COORD_SET.SLEW=Off"
+indi_setprop "${indi_telescope}.ON_COORD_SET.TRACK=On"
 indi_setprop "${indi_telescope}.ON_COORD_SET.SLEW=On"
+#indi_setprop "${indi_telescope}.ON_COORD_SET.SYNC=Off"
+
 
 
 #######################################
@@ -128,8 +147,8 @@ if [ "$1" == "s" ]
 then
 
         # SOUTH
-        indi_setprop "${indi_telescope}.GEOGRAPHIC_COORD.LAT;LONG=${longitude};${latitude}"
-        indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=45;10"
+#	indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=${ra_hours}:${ra_minutes}:${ra_seconds};00:00:00" && echo "RA/DEC set OK."
+	indi_setprop "${indi_telescope}.EQUATORIAL_EOD_COORD.RA;DEC=$(( 12+${ra_hours} )):${ra_minutes}:${ra_seconds};00:00:00" && echo "RA/DEC set OK."
 
 fi
 
