@@ -2,6 +2,8 @@
 
 D.A.R.V is a simple and yet very fast polar alignment method if you habe no sight to the north / south celestial pole. Requires sight to South or North at approximately 0° Declination and East _or_ West at approximately 0° Declination.
 
+A german translation of the process is here: https://github.com/apos/d_a_r_v
+
 Unfortunately EKOS does not support it. Fortunately, indi is scriptable: https://indilib.org/develop/developer-manual/104-scripting.html , and I did it :-) Feel free to mail me your ideas or post at _this_ thread - no crossposts supported (really!) ;-)
 
  * https://indilib.org/forum/wish-list/4077-d-a-r-v-drift-alignment-by-robert-vice-method.html#38732
