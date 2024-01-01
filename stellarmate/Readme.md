@@ -50,10 +50,11 @@ Now you can overtake your old setup
 
         mkdir -p ${TARGET_KSTARS}.config
         mkdir -p ${TARGET_KSTARS}.local/share/kstars
+        mkdir -p ${TARGET_KSTARS}.local/share/ekoslive_$(date +%F) \
 
         rsync --dry-run -av --progress --delete --exclude imageOverlays \
         ${SOURCE_KSTARS}.local/share/kstars ${TARGET_KSTARS}.local/share/. \
-        ${SOURCE_KSTARS}.local/share/ekoslive ${TARGET_KSTARS}.local/share/ekoslive.$(date +%F) \
+        ${SOURCE_KSTARS}.local/share/ekoslive ${TARGET_KSTARS}.local/share/ekoslive_$(date +%F) \
         ${SOURCE_KSTARS}.config/kstars* ${TARGET_KSTARS}.config/. \
         ${SOURCE_KSTARS}.indi ${TARGET_KSTARS}. \
         ${SOURCE_KSTARS}.ZWO ${TARGET_KSTARS}. \
