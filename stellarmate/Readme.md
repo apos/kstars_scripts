@@ -50,11 +50,11 @@ KNOW WHAT YOU DO!
     
         # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
         # SOURCE_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
-        # SOURCE_KSTARS="~/"
+        # SOURCE_KSTARS="${HOME}/""
         
         # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
         # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
-        # TARGET_KSTARS="~/"
+        # TARGET_KSTARS="${HOME}/"
        
 2. Backup your settings
 
