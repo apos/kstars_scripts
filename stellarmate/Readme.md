@@ -33,6 +33,7 @@ KNOW WHAT YOU DO!
         #    Then, and only then run without "--dry-run"
         rsync --dry-run \
         -av --progress --delete \
+        --exclude imageOverlays 
         ${SOURCE_KSTARS}.local/share/kstars ${TARGET_KSTARS}.local/share/. \
         ${SOURCE_KSTARS}.local/share/ekoslive ${TARGET_KSTARS}.local/share/ekoslive.$(date +%F) \
         ${SOURCE_KSTARS}.config/kstars* ${TARGET_KSTARS}.config/. \
