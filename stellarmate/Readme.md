@@ -11,7 +11,7 @@ Also you should backup your installation,.
 
 Do every step by hand and line by line (do not script this). You could damage your installation. Depending if your are backing up or doing a restore, the target and source has another meaning. 
 
-Hint: the ekoslive directory is just back uped, but should not be restored. 
+Hint: the ekoslive directory is just backuped, but should not be restored. 
 
 KNOW WHAT YOU DO!
 
@@ -48,7 +48,7 @@ Backup before overwrite
         ${TARGET_KSTARS}../../opt/ekoslive ${TARGET_KSTARS}/backup_$(date +%F)/. 
         
         
-Now you can overtake your old setup
+Now you can test to overtake your old setup
 
         mkdir -p ${TARGET_KSTARS}.config
         mkdir -p ${TARGET_KSTARS}.local/share/kstars
@@ -62,8 +62,7 @@ Now you can overtake your old setup
         ${SOURCE_KSTARS}.ZWO ${TARGET_KSTARS}. \
         ${SOURCE_KSTARS}FireCapture*  ${TARGET_KSTARS}. \
         ${SOURCE_KSTARS}Pictures ${TARGET_KSTARS}. \
-        ${SOURCE_KSTARS}Videos ${TARGET_KSTARS}. \
-        ${SOURCE_KSTARS}../../opt/ekoslive ${TARGET_KSTARS}../../opt/.        
+        ${SOURCE_KSTARS}Videos ${TARGET_KSTARS}. 
 
 
 OK? Then do it
