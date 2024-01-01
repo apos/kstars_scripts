@@ -38,14 +38,20 @@ KNOW WHAT YOU DO!
 Backup before overwrite
 
         rsync -av --progress --delete \
+        ${TARGET_KSTARS}.astropy ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}.bash* ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}.profile* ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}.ssh* ${TARGET_BACKUP}/. \
         ${TARGET_KSTARS}.local/share ${TARGET_BACKUP}/. \
         ${TARGET_KSTARS}.config ${TARGET_BACKUP}/. \
-        ${TARGET_KSTARS}.indi ${TARGET__BACKUP}/. \
-        ${TARGET_KSTARS}ZWO ${TARGET__BACKUP}/. \
-        ${TARGET_KSTARS}FireCapture* ${TARGET__BACKUP}/. \
-        ${TARGET_KSTARS}Pictures ${TARGET__BACKUP}/. \
-        ${TARGET_KSTARS}Videos ${TARGET__BACKUP}/. \
-        ${TARGET_KSTARS}../../opt/ekoslive ${TARGET__BACKUP}/. \
+        ${TARGET_KSTARS}.indi ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}.indihub ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}ZWO ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}FireCapture* ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}Pictures ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}Videos ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}.PHDGuidingV2 ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}../../opt/ekoslive ${TARGET_BACKUP}/. \
         
         
 Now you can test to overtake your old setup
