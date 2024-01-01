@@ -1,10 +1,15 @@
 # Backup your kstars home
 
 Sometimes, it is wise to backup you home directory which contains your indi files and other stuff. Either, if you like to copy your settings over to a new device.
-Also you should backup your installation 
+Also you should backup your installation,.
 
+Do every step by hand (do not script this). You could damage your installation. 
+
+KNOW WHAT YOU DO!
+
+    ###########################################
     # 1. Define the SOURCE AND TARGET
-    # Doubel check this!
+    #    !!! Double check this it correct !!!
     
     # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
     # SOURCE_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
@@ -14,8 +19,18 @@ Also you should backup your installation
     # TARGET_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
     # TARGET_KSTARS="~/"
     
+    ###########################################
+    # 2. Backup your settings
+    TARGET_SETTINGS_DIR=${TARGET_KSTARS}sm_installation_backup
+    mkdir-p  ${TARGET_SETTINGS_DIR}
+    dpkg --get-selections > ${TARGET_SETTINGS_DIR}Stellarmate_Package.list
+    sudo rsync -av /etc/apt/sources.list* ${TARGET_SETTINGS_DIR}/.
+    sudo apt-key exportall > ${TARGET_SETTINGS_DIR}/.
     
-    # 2. rsync with dry-run Check. Then run without "--dry-run"
+    ###########################################
+    # 3. Backup your home dir
+    #    First rsync with dry-run. Then check the output. 
+    #    Then, and only then run without "--dry-run"
     rsync --dry-run \
     -av --progress --delete \
     ${SOURCE_KSTARS}.local/share/kstars ${TARGET_KSTARS}.local/share/. \
@@ -25,3 +40,28 @@ Also you should backup your installation
     ${SOURCE_KSTARS}FireCapture*  ${TARGET_KSTARS}. \
     ${SOURCE_KSTARS}Pictures ${TARGET_KSTARS}. \
     ${SOURCE_KSTARS}Videos ${TARGET_KSTARS}. 
+
+You can replay the installation settings of apt and co. like so (from https://askubuntu.com/questions/9135/how-to-backup-settings-and-list-of-installed-packages)
+
+On the final system, which you will update, first update dpkg's list of available packages or it will just ignore your selections (see this debian bug for more info). You should do this before sudo dpkg --set-selections < ~/Package.list, like this:
+
+    apt-cache dumpavail > ~/temp_avail
+    sudo dpkg --merge-avail ~/temp_avail
+    rm ~/temp_avail
+
+Now you can reinstall
+
+    TARGET_SETTINGS_DIR=~/sm_installation_backup # assumes you followed the procedure above
+    sudo apt-key add ${TARGET_SETTINGS_DIR}Repo.keys
+    sudo cp -R ${TARGET_SETTINGS_DIR}sources.list* /etc/apt/
+    sudo apt-get update
+    sudo apt-get install dselect
+    sudo dselect update
+    sudo dpkg --set-selections < ${TARGET_SETTINGS_DIR}Package.list
+    sudo apt-get dselect-upgrade -y
+
+
+
+
+
+    
