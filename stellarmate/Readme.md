@@ -55,10 +55,13 @@ KNOW WHAT YOU DO!
         mkdir -p  ${TARGET_SETTINGS_DIR}
     
         dpkg --get-selections > ${TARGET_SETTINGS_DIR}Stellarmate_Package.list
+        less ${TARGET_SETTINGS_DIR}Stellarmate_Package.list # CHECK
         # the next first check with dry-run
         sudo rsync --dry-run -av --delete /etc/apt/sources.list* ${TARGET_SETTINGS_DIR}/.
+        ls -lah ${TARGET_SETTINGS_DIR}/sources.list* # CHECK
         # now do without --dry-run
         sudo apt-key exportall > ${TARGET_SETTINGS_DIR}/.
+        less ${TARGET_SETTINGS_DIR}/. # CHECK
 
 You can replay the installation settings of apt and co. like so (from https://askubuntu.com/questions/9135/how-to-backup-settings-and-list-of-installed-packages)
 
