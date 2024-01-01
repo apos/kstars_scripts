@@ -26,16 +26,24 @@ KNOW WHAT YOU DO!
         # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # TARGET_KSTARS="${HOME}/"
 
+        # TARGET_BACKUP=${TARGET_KSTARS}/backup$(date +%F)
+
     
-2. Now you can backup your home dir to the target device or folder
+3. Now you can backup your home dir to the target device or folder
    
         #    First rsync with dry-run. Then check the output. 
         #    Then, and only then run without "--dry-run"
+        mkdir -p ${TARGET_KSTARS}/backup_$(date +%F)
+      
         rsync --dry-run \
         -av --progress --delete \
         --exclude imageOverlays \
+        ${TARGET_KSTARS}.local/share ${TARGET_KSTARS}/backup_$(date +%F)/. \
+        ${TARGET_KSTARS}.local/config ${TARGET_KSTARS}/backup_$(date +%F)/. \
+        ${TARGET_KSTARS}.local/indi ${TARGET_KSTARS}/backup_$(date +%F)/. \
         ${SOURCE_KSTARS}.local/share/kstars ${TARGET_KSTARS}.local/share/. \
         ${SOURCE_KSTARS}.local/share/ekoslive ${TARGET_KSTARS}.local/share/ekoslive.$(date +%F) \
+        ${TARGET_KSTARS}.config/kstars* ${TARGET_KSTARS}.config/ \
         ${SOURCE_KSTARS}.config/kstars* ${TARGET_KSTARS}.config/. \
         ${SOURCE_KSTARS}.indi ${TARGET_KSTARS}. \
         ${SOURCE_KSTARS}.ZWO ${TARGET_KSTARS}. \
@@ -56,8 +64,10 @@ KNOW WHAT YOU DO!
         # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
         # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # TARGET_KSTARS="${HOME}/"
+
+        # TARGET_BACKUP=${TARGET_KSTARS}/backup$(date +%F)
        
-2. Backup your settings
+3. Backup your settings
 
         TARGET_SETTINGS_DIR="${TARGET_KSTARS}sm_installation_backup/"
         mkdir -p  ${TARGET_SETTINGS_DIR}
