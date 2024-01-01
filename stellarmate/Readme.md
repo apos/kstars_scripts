@@ -41,11 +41,11 @@ Backup before overwrite
         -av --progress --delete \
         --exclude imageOverlays \
         ${TARGET_KSTARS}.local/share ${TARGET_KSTARS}/backup_$(date +%F)/. \
-        ${TARGET_KSTARS}.local/config ${TARGET_KSTARS}/backup_$(date +%F)/. \
+        ${TARGET_KSTARS}.config ${TARGET_KSTARS}/backup_$(date +%F)/. \
         ${TARGET_KSTARS}.indi ${TARGET_KSTARS}/backup_$(date +%F)/. \
         ${TARGET_KSTARS}ZWO ${TARGET_KSTARS}/backup_$(date +%F)/. \
-        ${TARGET_KSTARS}Pictures ${TARGET_KSTARS}/backup_$(date +%F)/. \
         ${TARGET_KSTARS}FireCapture* ${TARGET_KSTARS}/backup_$(date +%F)/. \
+        ${TARGET_KSTARS}Pictures ${TARGET_KSTARS}/backup_$(date +%F)/. \
         ${TARGET_KSTARS}Videos ${TARGET_KSTARS}/backup_$(date +%F)/.
         
 Now you can overtake your old setup
@@ -55,7 +55,6 @@ Now you can overtake your old setup
         --exclude imageOverlays \
         ${SOURCE_KSTARS}.local/share/kstars ${TARGET_KSTARS}.local/share/. \
         ${SOURCE_KSTARS}.local/share/ekoslive ${TARGET_KSTARS}.local/share/ekoslive.$(date +%F) \
-        ${TARGET_KSTARS}.config/kstars* ${TARGET_KSTARS}.config/ \
         ${SOURCE_KSTARS}.config/kstars* ${TARGET_KSTARS}.config/. \
         ${SOURCE_KSTARS}.indi ${TARGET_KSTARS}. \
         ${SOURCE_KSTARS}.ZWO ${TARGET_KSTARS}. \
