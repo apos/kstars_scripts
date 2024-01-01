@@ -59,9 +59,11 @@ KNOW WHAT YOU DO!
     
         dpkg --get-selections > ${TARGET_SETTINGS_DIR}Stellarmate_Package.list
         less ${TARGET_SETTINGS_DIR}Stellarmate_Package.list # CHECK
+
         # the next first check with dry-run
         sudo rsync --dry-run -av --delete /etc/apt/sources.list* ${TARGET_SETTINGS_DIR}/.
         ls -lah ${TARGET_SETTINGS_DIR}/sources.list* # CHECK
+
         # now do without --dry-run
         sudo apt-key exportall > ${TARGET_SETTINGS_DIR}/.
         less ${TARGET_SETTINGS_DIR}/. # CHECK
