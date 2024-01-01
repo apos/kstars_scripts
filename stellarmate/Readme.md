@@ -36,6 +36,7 @@ KNOW WHAT YOU DO!
         mkdir -p ${TARGET_KSTARS}/backup_$(date +%F)
 
 Backup before overwrite
+
         rsync \
         -av --progress --delete \
         --exclude imageOverlays \
