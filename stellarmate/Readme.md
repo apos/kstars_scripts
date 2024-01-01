@@ -12,19 +12,19 @@ KNOW WHAT YOU DO!
 1. Define the SOURCE AND TARGET
 !!! Double check this it correct !!! It depends, if you mount your backup device 
     
-    # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
-    # SOURCE_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
-    # SOURCE_KSTARS="~/"
-    
-    # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
-    # TARGET_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
-    # TARGET_KSTARS="~/"
+        # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
+        # SOURCE_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
+        # SOURCE_KSTARS="~/"
+        
+        # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
+        # TARGET_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
+        # TARGET_KSTARS="~/"
 
     
 2. Now you can backup your home dir to the target device or folder
    
-    #    First rsync with dry-run. Then check the output. 
-    #    Then, and only then run without "--dry-run"
+        #    First rsync with dry-run. Then check the output. 
+        #    Then, and only then run without "--dry-run"
     rsync --dry-run \
     -av --progress --delete \
     ${SOURCE_KSTARS}.local/share/kstars ${TARGET_KSTARS}.local/share/. \
@@ -41,13 +41,13 @@ KNOW WHAT YOU DO!
 1. Define the SOURCE AND TARGET
 !!! Double check this it correct !!!
     
-    # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
-    # SOURCE_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
-    # SOURCE_KSTARS="~/"
-    
-    # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
-    # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
-    # TARGET_KSTARS="~/"
+        # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
+        # SOURCE_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
+        # SOURCE_KSTARS="~/"
+        
+        # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
+        # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
+        # TARGET_KSTARS="~/"
        
 2. Backup your settings
 
@@ -55,9 +55,9 @@ KNOW WHAT YOU DO!
     mkdir -p  ${TARGET_SETTINGS_DIR}
     
     dpkg --get-selections > ${TARGET_SETTINGS_DIR}Stellarmate_Package.list
-    # the next first check with dry-run
+        # the next first check with dry-run
     sudo rsync --dry-run -av --delete /etc/apt/sources.list* ${TARGET_SETTINGS_DIR}/.
-    # now do without --dry-run
+        # now do without --dry-run
     sudo apt-key exportall > ${TARGET_SETTINGS_DIR}/.
 
 You can replay the installation settings of apt and co. like so (from https://askubuntu.com/questions/9135/how-to-backup-settings-and-list-of-installed-packages)
