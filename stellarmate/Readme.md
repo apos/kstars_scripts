@@ -5,7 +5,7 @@
 Sometimes, it is wise to backup you home directory which contains your indi files and other stuff. Either, if you like to copy your settings over to a new device.
 Also you should backup your installation,.
 
-Do every step by hand (do not script this). You could damage your installation. Depending if your are backing up or doing a restore, the target and source has another meaning. 
+Do every step by hand and line by line (do not script this). You could damage your installation. Depending if your are backing up or doing a restore, the target and source has another meaning. 
 
 Hint: the ekoslive directory is just back uped, but should not be restored. 
 
@@ -79,12 +79,15 @@ On the final system, which you will update, first update dpkg's list of availabl
 Now you can reinstall
 
         sudo apt-key add ${TARGET_SETTINGS_DIR}Repo.keys
+        
         # the next first check with dry-run
         sudo rsync --dry-run -av --delete ${TARGET_SETTINGS_DIR}sources.list* /etc/apt/
-        # now do without --dry-run
+        # now do again without --dry-run
+        
         sudo apt-get update
         sudo apt-get install dselect
         sudo dselect update
+        
         sudo dpkg --set-selections < ${TARGET_SETTINGS_DIR}Package.list
         sudo apt-get dselect-upgrade -y
 
