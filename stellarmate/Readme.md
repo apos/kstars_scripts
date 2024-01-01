@@ -33,19 +33,19 @@ KNOW WHAT YOU DO!
    
         #    First rsync with dry-run. Then check the output. 
         #    Then, and only then run without "--dry-run"
-        mkdir -p ${TARGET_KSTARS}/backup_$(date +%F)
+        mkdir -p ${TARGET_BACKUP}
 
 Backup before overwrite
 
         rsync -av --progress --delete \
-        ${TARGET_KSTARS}.local/share ${TARGET_KSTARS}/backup_$(date +%F)/. \
-        ${TARGET_KSTARS}.config ${TARGET_KSTARS}/backup_$(date +%F)/. \
-        ${TARGET_KSTARS}.indi ${TARGET_KSTARS}/backup_$(date +%F)/. \
-        ${TARGET_KSTARS}ZWO ${TARGET_KSTARS}/backup_$(date +%F)/. \
-        ${TARGET_KSTARS}FireCapture* ${TARGET_KSTARS}/backup_$(date +%F)/. \
-        ${TARGET_KSTARS}Pictures ${TARGET_KSTARS}/backup_$(date +%F)/. \
-        ${TARGET_KSTARS}Videos ${TARGET_KSTARS}/backup_$(date +%F)/. \
-        ${TARGET_KSTARS}../../opt/ekoslive ${TARGET_KSTARS}/backup_$(date +%F)/. 
+        ${TARGET_KSTARS}.local/share ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}.config ${TARGET_BACKUP}/. \
+        ${TARGET_KSTARS}.indi ${TARGET__BACKUP}/. \
+        ${TARGET_KSTARS}ZWO ${TARGET__BACKUP}/. \
+        ${TARGET_KSTARS}FireCapture* ${TARGET__BACKUP}/. \
+        ${TARGET_KSTARS}Pictures ${TARGET__BACKUP}/. \
+        ${TARGET_KSTARS}Videos ${TARGET__BACKUP}/. \
+        ${TARGET_KSTARS}../../opt/ekoslive ${TARGET__BACKUP}/. \
         
         
 Now you can test to overtake your old setup
@@ -95,11 +95,11 @@ Check
         # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # TARGET_KSTARS="${HOME}/"
 
-        # TARGET_BACKUP=${TARGET_KSTARS}/backup$(date +%F)
+        # TARGET_BACKUP="${TARGET_KSTARS}/backup$(date +%F)/"
        
 3. Backup your settings
 
-        TARGET_SETTINGS_DIR="${TARGET_KSTARS}sm_installation_backup/"
+        TARGET_SETTINGS_DIR="${TARGET_BACKUP}sm_installation_backup/"
         mkdir -p  ${TARGET_SETTINGS_DIR}
     
         dpkg --get-selections > ${TARGET_SETTINGS_DIR}Stellarmate_Package.list
