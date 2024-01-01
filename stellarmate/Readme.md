@@ -28,6 +28,7 @@ KNOW WHAT YOU DO!
         rsync --dry-run \
         -av --progress --delete \
         ${SOURCE_KSTARS}.local/share/kstars ${TARGET_KSTARS}.local/share/. \
+        ${SOURCE_KSTARS}.local/share/ekoslive ${TARGET_KSTARS}.local/share/ekoslive.$(date +%F) \
         ${SOURCE_KSTARS}.config/kstars* ${TARGET_KSTARS}.config/. \
         ${SOURCE_KSTARS}.indi ${TARGET_KSTARS}. \
         ${SOURCE_KSTARS}.ZWO ${TARGET_KSTARS}. \
