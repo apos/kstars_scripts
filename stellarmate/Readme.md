@@ -19,11 +19,11 @@ KNOW WHAT YOU DO!
 !!! Double check this it correct !!! It depends, if you mount your backup device 
     
         # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
-        # SOURCE_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
+        # SOURCE_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # SOURCE_KSTARS="${HOME}/"
         
         # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
-        # TARGET_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
+        # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # TARGET_KSTARS="${HOME}/"
 
     
