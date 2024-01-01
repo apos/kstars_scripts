@@ -58,15 +58,16 @@ KNOW WHAT YOU DO!
         mkdir -p  ${TARGET_SETTINGS_DIR}
     
         dpkg --get-selections > ${TARGET_SETTINGS_DIR}Stellarmate_Package.list
-        less ${TARGET_SETTINGS_DIR}Stellarmate_Package.list # CHECK
+        less ${TARGET_SETTINGS_DIR}Stellarmate_Package.list 
 
         # the next first check with dry-run
         sudo rsync --dry-run -av --delete /etc/apt/sources.list* ${TARGET_SETTINGS_DIR}/.
-        ls -lah ${TARGET_SETTINGS_DIR}/sources.list* # CHECK
+        ls -lah ${TARGET_SETTINGS_DIR}/sources*
 
         # now do without --dry-run
-        sudo apt-key exportall > ${TARGET_SETTINGS_DIR}/.
-        less ${TARGET_SETTINGS_DIR}/. # CHECK
+        touch ${TARGET_SETTINGS_DIR}/apt_key_exportall
+        sudo apt-key exportall > ${TARGET_SETTINGS_DIR}/apt_key_exportall
+        less ${TARGET_SETTINGS_DIR}/apt_key_exportall
 
 
 ## Replay your settings
