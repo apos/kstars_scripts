@@ -61,6 +61,20 @@ Now you can overtake your old setup
         ${SOURCE_KSTARS}Pictures ${TARGET_KSTARS}. \
         ${SOURCE_KSTARS}Videos ${TARGET_KSTARS}. 
 
+
+OK? Then do it
+
+        rsync -av --progress --delete --exclude imageOverlays \
+        ${SOURCE_KSTARS}.local/share/kstars ${TARGET_KSTARS}.local/share/. \
+        ${SOURCE_KSTARS}.local/share/ekoslive ${TARGET_KSTARS}.local/share/ekoslive.$(date +%F) \
+        ${SOURCE_KSTARS}.config/kstars* ${TARGET_KSTARS}.config/. \
+        ${SOURCE_KSTARS}.indi ${TARGET_KSTARS}. \
+        ${SOURCE_KSTARS}.ZWO ${TARGET_KSTARS}. \
+        ${SOURCE_KSTARS}FireCapture*  ${TARGET_KSTARS}. \
+        ${SOURCE_KSTARS}Pictures ${TARGET_KSTARS}. \
+        ${SOURCE_KSTARS}Videos ${TARGET_KSTARS}. 
+
+
 Check
 
         ls -lah ${TARGET_KSTARS}/backup_$(date +%F)
