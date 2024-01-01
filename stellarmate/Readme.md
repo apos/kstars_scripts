@@ -1,3 +1,7 @@
+# Programs to install on Stellarmate
+
+        sudo apt install git vim vim-scripts openvpn
+
 # Backup your Stellarmate
 
 ## Backup or restore home
