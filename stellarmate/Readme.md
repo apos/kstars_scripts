@@ -37,9 +37,7 @@ KNOW WHAT YOU DO!
 
 Backup before overwrite
 
-        rsync \
-        -av --progress --delete \
-        --exclude imageOverlays \
+        rsync -av --progress --delete \
         ${TARGET_KSTARS}.local/share ${TARGET_KSTARS}/backup_$(date +%F)/. \
         ${TARGET_KSTARS}.config ${TARGET_KSTARS}/backup_$(date +%F)/. \
         ${TARGET_KSTARS}.indi ${TARGET_KSTARS}/backup_$(date +%F)/. \
@@ -53,9 +51,7 @@ Now you can overtake your old setup
         mkdir -p ${TARGET_KSTARS}.config
         mkdir -p ${TARGET_KSTARS}.local/share/kstars
 
-        rsync --dry-run \
-        -av --progress --delete \
-        --exclude imageOverlays \
+        rsync --dry-run -av --progress --delete --exclude imageOverlays \
         ${SOURCE_KSTARS}.local/share/kstars ${TARGET_KSTARS}.local/share/. \
         ${SOURCE_KSTARS}.local/share/ekoslive ${TARGET_KSTARS}.local/share/ekoslive.$(date +%F) \
         ${SOURCE_KSTARS}.config/kstars* ${TARGET_KSTARS}.config/. \
