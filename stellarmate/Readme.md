@@ -50,6 +50,9 @@ Backup before overwrite
         
 Now you can overtake your old setup
 
+        mkdir -p ${TARGET_KSTARS}.config
+        mkdir -p ${TARGET_KSTARS}.local/share/kstars
+
         rsync --dry-run \
         -av --progress --delete \
         --exclude imageOverlays \
