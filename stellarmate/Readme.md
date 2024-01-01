@@ -53,8 +53,8 @@ KNOW WHAT YOU DO!
     ###########################################
     # 2. Backup your settings
     TARGET_SETTINGS_DIR=${TARGET_KSTARS}sm_installation_backup
+    mkdir -p  ${TARGET_SETTINGS_DIR}
     
-    mkdir-p  ${TARGET_SETTINGS_DIR}
     dpkg --get-selections > ${TARGET_SETTINGS_DIR}Stellarmate_Package.list
     sudo rsync -av /etc/apt/sources.list* ${TARGET_SETTINGS_DIR}/.
     sudo apt-key exportall > ${TARGET_SETTINGS_DIR}/.
