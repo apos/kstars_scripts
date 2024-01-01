@@ -44,7 +44,9 @@ Backup before overwrite
         ${TARGET_KSTARS}ZWO ${TARGET_KSTARS}/backup_$(date +%F)/. \
         ${TARGET_KSTARS}FireCapture* ${TARGET_KSTARS}/backup_$(date +%F)/. \
         ${TARGET_KSTARS}Pictures ${TARGET_KSTARS}/backup_$(date +%F)/. \
-        ${TARGET_KSTARS}Videos ${TARGET_KSTARS}/backup_$(date +%F)/.
+        ${TARGET_KSTARS}Videos ${TARGET_KSTARS}/backup_$(date +%F)/. \
+        ${TARGET_KSTARS}../../opt/ekoslive ${TARGET_KSTARS}/backup_$(date +%F)/. 
+        
         
 Now you can overtake your old setup
 
@@ -60,7 +62,8 @@ Now you can overtake your old setup
         ${SOURCE_KSTARS}.ZWO ${TARGET_KSTARS}. \
         ${SOURCE_KSTARS}FireCapture*  ${TARGET_KSTARS}. \
         ${SOURCE_KSTARS}Pictures ${TARGET_KSTARS}. \
-        ${SOURCE_KSTARS}Videos ${TARGET_KSTARS}. 
+        ${SOURCE_KSTARS}Videos ${TARGET_KSTARS}. \
+        ${SOURCE_KSTARS}../../opt/ekoslive ${TARGET_KSTARS}../../opt/.        
 
 
 OK? Then do it
