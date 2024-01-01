@@ -9,9 +9,8 @@ Do every step by hand (do not script this). You could damage your installation.
 
 KNOW WHAT YOU DO!
 
-    ###########################################
-    # 1. Define the SOURCE AND TARGET
-    #    !!! Double check this it correct !!!
+1. Define the SOURCE AND TARGET
+!!! Double check this it correct !!! It depends, if you mount your backup device 
     
     # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
     # SOURCE_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
@@ -20,9 +19,10 @@ KNOW WHAT YOU DO!
     # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
     # TARGET_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
     # TARGET_KSTARS="~/"
+
     
-    ###########################################
-    # 2. Backup your home dir
+2. Now you can backup your home dir to the target device or folder
+   
     #    First rsync with dry-run. Then check the output. 
     #    Then, and only then run without "--dry-run"
     rsync --dry-run \
@@ -38,9 +38,8 @@ KNOW WHAT YOU DO!
 
 ## Backup an install your debians packages 
 
-    ###########################################
-    # 1. Define the SOURCE AND TARGET
-    #    !!! Double check this it correct !!!
+1. Define the SOURCE AND TARGET
+!!! Double check this it correct !!!
     
     # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
     # SOURCE_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
@@ -50,15 +49,16 @@ KNOW WHAT YOU DO!
     # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
     # TARGET_KSTARS="~/"
        
-    ###########################################
-    # 2. Backup your settings
+2. Backup your settings
+
     TARGET_SETTINGS_DIR=${TARGET_KSTARS}sm_installation_backup
     mkdir -p  ${TARGET_SETTINGS_DIR}
     
     dpkg --get-selections > ${TARGET_SETTINGS_DIR}Stellarmate_Package.list
-    sudo rsync -av /etc/apt/sources.list* ${TARGET_SETTINGS_DIR}/.
+    # the next first check with dry-run
+    sudo rsync --dry-run -av --delete /etc/apt/sources.list* ${TARGET_SETTINGS_DIR}/.
+    # now do without --dry-run
     sudo apt-key exportall > ${TARGET_SETTINGS_DIR}/.
-    
 
 You can replay the installation settings of apt and co. like so (from https://askubuntu.com/questions/9135/how-to-backup-settings-and-list-of-installed-packages)
 
@@ -71,7 +71,9 @@ On the final system, which you will update, first update dpkg's list of availabl
 Now you can reinstall
 
     sudo apt-key add ${TARGET_SETTINGS_DIR}Repo.keys
-    sudo cp -R ${TARGET_SETTINGS_DIR}sources.list* /etc/apt/
+    # the next first check with dry-run
+    sudo rsync --dry-run -av --delete ${TARGET_SETTINGS_DIR}sources.list* /etc/apt/
+    # now do without --dry-run
     sudo apt-get update
     sudo apt-get install dselect
     sudo dselect update
