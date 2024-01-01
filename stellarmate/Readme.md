@@ -20,11 +20,11 @@ KNOW WHAT YOU DO!
     
         # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
         # SOURCE_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
-        # SOURCE_KSTARS="~/"
+        # SOURCE_KSTARS="${HOME}/"
         
         # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
         # TARGET_KSTARS="/media/stellarmate/MY_DEVICE/home/stellarmate/"
-        # TARGET_KSTARS="~/"
+        # TARGET_KSTARS="${HOME}/"
 
     
 2. Now you can backup your home dir to the target device or folder
