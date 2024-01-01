@@ -1,11 +1,13 @@
 # Backup your Stellarmate
 
-## Backup home
+## Backup or restore home
 
 Sometimes, it is wise to backup you home directory which contains your indi files and other stuff. Either, if you like to copy your settings over to a new device.
 Also you should backup your installation,.
 
-Do every step by hand (do not script this). You could damage your installation. 
+Do every step by hand (do not script this). You could damage your installation. Depending if your are backing up or doing a restore, the target and source has another meaning. 
+
+Hint: the ekoslive directory is just back uped, but should not be restored. 
 
 KNOW WHAT YOU DO!
 
@@ -64,6 +66,8 @@ KNOW WHAT YOU DO!
         sudo apt-key exportall > ${TARGET_SETTINGS_DIR}/.
         less ${TARGET_SETTINGS_DIR}/. # CHECK
 
+
+## Replay your settings
 You can replay the installation settings of apt and co. like so (from https://askubuntu.com/questions/9135/how-to-backup-settings-and-list-of-installed-packages)
 
 On the final system, which you will update, first update dpkg's list of available packages or it will just ignore your selections (see this debian bug for more info). You should do this before sudo dpkg --set-selections < ~/Package.list, like this:
