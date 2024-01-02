@@ -1,5 +1,5 @@
 # Programs to install on Stellarmate
-
+This is certainly growing over time
         sudo apt install git vim vim-scripts openvpn
 
 # Backup your Stellarmate
@@ -11,18 +11,19 @@ Also you should backup your installation,.
 
 Do every step by hand and line by line (do not script this). You could damage your installation. Depending if your are backing up or doing a restore, the target and source has another meaning. 
 
-Hint: the ekoslive directory is just backuped, but should not be restored. 
+Hint: the ekoslive directory is just backuped, but should not be restore onto the scope
 
 KNOW WHAT YOU DO!
 
 1. Define the SOURCE AND TARGET
-!!! Double check this it correct !!! It depends, if you mount your backup device 
+!!! Double check this it correct and meet your need!!!
+The selection depends opon, what your source, target and backup path is. Alter to your needs. This are just templates, I am using most
     
-        # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
+        # SOURCE_KSTARS="stellarmate@stellarmate.local:~/" # this needs the parameter -e *ssh -p 5624' 
         # SOURCE_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # SOURCE_KSTARS="${HOME}/"
         
-        # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
+        # TARGET_KSTARS="stellarmate@stellarmate.local:~/" # this needs the parameter -e *ssh -p 5624' 
         # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # TARGET_KSTARS="${HOME}/"
 
@@ -93,11 +94,11 @@ Check
 1. Define the SOURCE AND TARGET
 !!! Double check this it correct !!!
     
-        # SOURCE_KSTARS="stellarmate@IP_ADDRESS:~/"
+        # SOURCE_KSTARS="stellarmate@stellarmate.local:~/" # this needs the parameter -e *ssh -p 5624' 
         # SOURCE_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # SOURCE_KSTARS="${HOME}/""
         
-        # TARGET_KSTARS="stellarmate@IP_ADDRESS:~/"
+        # TARGET_KSTARS="stellarmate@stellarmate.local:~/" # this needs the parameter -e *ssh -p 5624' 
         # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # TARGET_KSTARS="${HOME}/"
 
