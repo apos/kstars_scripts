@@ -13,7 +13,7 @@ Do every step by hand and line by line (do not script this). You could damage yo
 
 Hint: the ekoslive directory is just backuped, but should not be restore onto the scope
 
-KNOW WHAT YOU DO!
+**KNOW WHAT YOU DO and test first with --dry-run!**
 
 1. Define the SOURCE AND TARGET
 !!! Double check this it correct and meet your need!!!
