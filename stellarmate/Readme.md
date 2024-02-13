@@ -95,7 +95,7 @@ Check
 
         ls -lah ${TARGET_KSTARS}/backup_$(date +%F)
 
-## Backup an install your debians packages 
+## Backup and install your debians packages 
 
 1. Define the SOURCE AND TARGET
 !!! Double check this it correct !!!
