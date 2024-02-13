@@ -19,15 +19,21 @@ KNOW WHAT YOU DO!
 !!! Double check this it correct and meet your need!!!
 The selection depends opon, what your source, target and backup path is. Alter to your needs. This are just templates, I am using most
     
+        ## VARIABLES
+        ## For the script to run you need to define some variables. Chose wise and test before running the scripts 
+        #
+        ## Alter and then use one of the next three
         # SOURCE_KSTARS="stellarmate@stellarmate.local:~/" # this needs the parameter -e *ssh -p 5624' 
         # SOURCE_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # SOURCE_KSTARS="${HOME}/"
         
+        ## Alter and then use one of the next three
         # TARGET_KSTARS="stellarmate@stellarmate.local:~/" # this needs the parameter -e *ssh -p 5624' 
         # TARGET_KSTARS="/media/stellarmate/rootfs/home/stellarmate/"
         # TARGET_KSTARS="${HOME}/"
 
-        # TARGET_BACKUP=${TARGET_KSTARS}/backup$(date +%F)
+        ## Define a daily uniquie backup subdirectory at the target
+        TARGET_BACKUP=${TARGET_KSTARS}/backup$(date +%F)
 
     
 3. Now you can backup your home dir to the target device or folder
@@ -36,7 +42,7 @@ The selection depends opon, what your source, target and backup path is. Alter t
         #    Then, and only then run without "--dry-run"
         mkdir -p ${TARGET_BACKUP}
 
-Backup before overwrite
+Backup everything into the defined target backup directory.
 
         rsync -av --progress --delete \
         ${TARGET_KSTARS}.astropy ${TARGET_BACKUP}/. \
@@ -55,7 +61,7 @@ Backup before overwrite
         ${TARGET_KSTARS}../../opt/ekoslive ${TARGET_BACKUP}/. \
         
         
-Now you can test to overtake your old setup
+Now you can test to overtake your old setup. The --dry-run option does only a testrun. Carefully check the output. 
 
         mkdir -p ${TARGET_KSTARS}.config
         mkdir -p ${TARGET_KSTARS}.local/share/kstars
@@ -72,7 +78,7 @@ Now you can test to overtake your old setup
         ${SOURCE_KSTARS}Videos ${TARGET_KSTARS}. 
 
 
-OK? Then do it
+OK? Then do it. Be aware: this deletes the target files .
 
         rsync -av --progress --delete --exclude imageOverlays \
         ${SOURCE_KSTARS}.local/share/kstars ${TARGET_KSTARS}.local/share/. \
