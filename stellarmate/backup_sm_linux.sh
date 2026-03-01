@@ -70,9 +70,9 @@ check_pv() {
         if [[ "$response" =~ ^[Yy]$ ]]; then
             echo "Installing pv..."
             if command -v pacman &>/dev/null; then
-                pacman -Sy --noconfirm pv
+                pacman -Sy --noconfirm pv || true
             elif command -v apt-get &>/dev/null; then
-                apt-get install -y pv
+                apt-get install -y pv || true
             else
                 echo -e "${RED}Unknown package manager. Please install 'pv' manually.${NC}"
             fi
