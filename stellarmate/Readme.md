@@ -25,6 +25,12 @@ Works on Debian/Ubuntu-based systems (StellarMate OS) and Arch Linux.
 **Optional paths** (included if present):
 `~/.phd2`, `~/.ZWO`, `~/.PHDGuidingV2`, `~/FireCapture`, `~/.astropy`, `~/.java`, `~/bin`
 
+**Always excluded:**
+`~/Documents/backup_files` — the backup directory itself is never archived, whether it is a real
+directory or a symlink (e.g. pointing to a NAS or cloud mount). This prevents recursive inclusion
+and keeps archive sizes predictable. Large data such as astro images should be handled separately
+through dedicated NAS or cloud backup solutions.
+
 ### Requirements
 
 - `sudo` / root (required for `/etc/` access)

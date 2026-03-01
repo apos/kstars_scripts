@@ -145,8 +145,9 @@ make_archive() {
     echo ""
     echo "Estimating backup size..."
     local raw_bytes raw_human estimated_bytes estimated_human avail_bytes avail_human
-    raw_bytes=$(du -sbc "${ALL_PATHS[@]}" 2>/dev/null | tail -1 | cut -f1)
-    raw_human=$(du -shc "${ALL_PATHS[@]}" 2>/dev/null | tail -1 | cut -f1)
+    # Exclude the backup dir itself — avoids recursive inclusion and symlinks pointing to NAS/cloud
+    raw_bytes=$(du -sbc --exclude="$BACKUP_DIR" "${ALL_PATHS[@]}" 2>/dev/null | tail -1 | cut -f1)
+    raw_human=$(du -shc --exclude="$BACKUP_DIR" "${ALL_PATHS[@]}" 2>/dev/null | tail -1 | cut -f1)
     estimated_bytes=$(( raw_bytes / 2 ))
     estimated_human=$(numfmt --to=iec --suffix=B "$estimated_bytes")
     avail_bytes=$(df -B1 "$BACKUP_DIR" | awk 'NR==2 {print $4}')
@@ -170,9 +171,9 @@ make_archive() {
     echo ""
     echo "Creating archive: $(basename "$output_path")..."
     if [[ "$PV_AVAILABLE" == true ]]; then
-        tar -cz "${ALL_PATHS[@]}" | pv -s "$raw_bytes" > "$output_path"
+        tar -cz --exclude="$BACKUP_DIR" "${ALL_PATHS[@]}" | pv -s "$raw_bytes" > "$output_path"
     else
-        tar -czf "$output_path" --checkpoint=100 --checkpoint-action=dot "${ALL_PATHS[@]}"
+        tar -czf "$output_path" --exclude="$BACKUP_DIR" --checkpoint=100 --checkpoint-action=dot "${ALL_PATHS[@]}"
         echo ""
     fi
 
