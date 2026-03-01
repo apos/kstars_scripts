@@ -219,12 +219,16 @@ make_archive() {
     echo "Actual size:       $actual_size"
     echo "Estimated size:    ~$estimated_human"
     echo "Compression ratio: ${compression_ratio}%"
+    # Save manifest for fast listing during restore
+    local manifest_path="${output_path%.tar.gz}.manifest"
+    tar -tzf "$output_path" > "$manifest_path"
+
     echo ""
     echo "Contents (directory tree):"
     if [[ "$TREE_AVAILABLE" == true ]]; then
-        tar -tzf "$output_path" | tree --fromfile -a
+        tree --fromfile -a < "$manifest_path"
     else
-        tar -tzf "$output_path"
+        cat "$manifest_path"
     fi
 }
 
@@ -286,13 +290,22 @@ do_restore() {
     echo ""
 
     # --- Select paths to exclude from restore ---
+    local manifest_path="${restore_file%.tar.gz}.manifest"
+    local raw_listing
+    if [[ -f "$manifest_path" ]]; then
+        raw_listing="$manifest_path"
+    else
+        echo -e "${YELLOW}No manifest found — scanning archive (may take a while for large files)...${NC}"
+        raw_listing=$(mktemp)
+        tar -tzf "$restore_file" > "$raw_listing"
+    fi
+
     echo "Paths in archive:"
     local archive_paths=()
     while IFS= read -r p; do
         [[ -n "$p" ]] && archive_paths+=("$p")
     done < <(
-        tar -tzf "$restore_file" \
-        | sed 's|^[./]*||; s|/$||' \
+        sed 's|^[./]*||; s|/$||' "$raw_listing" \
         | awk -F/ '{
             if ($1=="home") {
                 if (NF>=3) key=$1"/"$2"/"$3
@@ -308,6 +321,9 @@ do_restore() {
         | sort -u \
         | grep -v '^$'
     )
+
+    # Clean up temp file if we created one
+    [[ "$raw_listing" != "$manifest_path" ]] && rm -f "$raw_listing"
 
     for i in "${!archive_paths[@]}"; do
         printf "  %2d)  %s\n" "$((i+1))" "${archive_paths[$i]}"
