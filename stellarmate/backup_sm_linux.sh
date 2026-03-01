@@ -7,43 +7,48 @@ set -euo pipefail
 REAL_USER="${SUDO_USER:-$USER}"
 REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 
-# --- Configuration ---
-BACKUP_DIR="$REAL_HOME/Documents/backup_files"
-
-# --- Core paths (always backed up) ---
-CORE_PATHS=(
-    /etc/hosts
-    /etc/NetworkManager/system-connections
-    "$REAL_HOME/Documents/sequences"
-    "$REAL_HOME/Documents/scheduler"
-    "$REAL_HOME/.indi"
-    "$REAL_HOME/.config/autostart"
-    "$REAL_HOME/.config/kstars"
-    "$REAL_HOME/.config/kstarsrc"
-    "$REAL_HOME/.config/kstars.kmessagebox"
-    "$REAL_HOME/.config/kstars.notifyrc"
-    "$REAL_HOME/.local/share/ekoslive"
-    "$REAL_HOME/.local/share/kstars"
-    "$REAL_HOME/.ssh"
-)
-
-# --- Optional paths (backed up if present) ---
-OPTIONAL_PATHS=(
-    "$REAL_HOME/.config/kstarsrc.lock"
-    "$REAL_HOME/.phd2"
-    "$REAL_HOME/.ZWO"
-    "$REAL_HOME/.PHDGuidingV2"
-    "$REAL_HOME/FireCapture"
-    "$REAL_HOME/.astropy"
-    "$REAL_HOME/.java"
-    "$REAL_HOME/bin"
-)
-
 # --- Colors ---
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
+
+# --- Configuration ---
+BACKUP_DIR="$REAL_HOME/Documents/backup_files"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PATHS_CONF="$SCRIPT_DIR/backup_paths.conf"
+
+# --- Read path lists from config file ---
+CORE_PATHS=()
+OPTIONAL_PATHS=()
+
+load_paths() {
+    if [[ ! -f "$PATHS_CONF" ]]; then
+        echo -e "${RED}ERROR: Config file not found: $PATHS_CONF${NC}"
+        exit 1
+    fi
+    local section=""
+    while IFS= read -r line; do
+        line="${line%%#*}"          # strip inline comments
+        line="${line#"${line%%[![:space:]]*}"}"  # trim leading whitespace
+        line="${line%"${line##*[![:space:]]}"}"  # trim trailing whitespace
+        [[ -z "$line" ]] && continue
+        if [[ "$line" == "[core]" ]];     then section=core;     continue; fi
+        if [[ "$line" == "[optional]" ]]; then section=optional; continue; fi
+        # Expand ~ to real home
+        line="${line/#\~/$REAL_HOME}"
+        case "$section" in
+            core)     CORE_PATHS+=("$line") ;;
+            optional) OPTIONAL_PATHS+=("$line") ;;
+        esac
+    done < "$PATHS_CONF"
+
+    if [[ ${#CORE_PATHS[@]} -eq 0 ]]; then
+        echo -e "${RED}ERROR: No [core] paths found in $PATHS_CONF${NC}"
+        exit 1
+    fi
+}
+load_paths
 
 PV_AVAILABLE=false
 TREE_AVAILABLE=false

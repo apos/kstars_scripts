@@ -7,23 +7,22 @@ Works on Debian/Ubuntu-based systems (StellarMate OS) and Arch Linux (SMOS).
 
 ### What gets backed up
 
-**Core paths** (always — backup aborts if any are missing):
+Paths are defined in `backup_paths.conf` (same directory as the script).
+Edit this file to add or remove paths without touching the script itself.
+Use `~` for the user's home directory. Format:
 
-| Path | Content |
-|---|---|
-| `/etc/hosts` | Host file |
-| `/etc/NetworkManager/system-connections` | WiFi/network credentials |
-| `~/Documents/sequences` | KStars capture sequences |
-| `~/Documents/scheduler` | KStars scheduler jobs |
-| `~/.indi` | INDI driver profiles and config |
-| `~/.config/autostart` | Autostart entries |
-| `~/.config/kstars*` | KStars/Ekos configuration |
-| `~/.local/share/ekoslive` | EkosLive settings |
-| `~/.local/share/kstars` | KStars data (catalogs, logs, …) |
-| `~/.ssh` | SSH keys |
+```ini
+[core]
+/etc/hosts
+~/Documents/sequences
 
-**Optional paths** (included if present):
-`~/.phd2`, `~/.ZWO`, `~/.PHDGuidingV2`, `~/FireCapture`, `~/.astropy`, `~/.java`, `~/bin`
+[optional]
+~/.phd2
+~/bin
+```
+
+- **`[core]`** — backup aborts if any path is missing
+- **`[optional]`** — included only if present, silently skipped otherwise
 
 **Always excluded:**
 `~/Documents/backup_files` — the backup directory itself is never archived, whether it is a real
