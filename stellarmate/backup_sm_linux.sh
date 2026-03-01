@@ -70,7 +70,8 @@ check_pv() {
         if [[ "$response" =~ ^[Yy]$ ]]; then
             echo "Installing pv..."
             if command -v pacman &>/dev/null; then
-                pacman -Sy --noconfirm pv || true
+                pacman -Sy --noconfirm pv || \
+                    (command -v yay &>/dev/null && sudo -u "$REAL_USER" yay -S --noconfirm pv) || true
             elif command -v apt-get &>/dev/null; then
                 apt-get install -y pv || true
             else
