@@ -250,6 +250,45 @@ do_restore() {
     echo "Restore from: $(basename "$restore_file")"
     echo ""
 
+    # --- Select paths to exclude from restore ---
+    echo "Paths in archive:"
+    local archive_paths=()
+    while IFS= read -r p; do
+        [[ -n "$p" ]] && archive_paths+=("$p")
+    done < <(
+        tar -tzf "$restore_file" \
+        | sed 's|^[./]*||; s|/$||' \
+        | awk -F/ '{
+            if ($1=="home" && NF>=3) key=$1"/"$2"/"$3
+            else if (NF>=2)         key=$1"/"$2
+            else                    key=$1
+            print key
+          }' \
+        | sort -u \
+        | grep -v '^$'
+    )
+
+    for i in "${!archive_paths[@]}"; do
+        printf "  %2d)  %s\n" "$((i+1))" "${archive_paths[$i]}"
+    done
+    echo ""
+    read -r -p "Exclude paths from restore (comma-separated numbers), or Enter to restore all: " excl_input
+
+    local exclude_args=()
+    if [[ -n "$excl_input" ]]; then
+        IFS=',' read -ra excl_selections <<< "$excl_input"
+        for sel in "${excl_selections[@]}"; do
+            sel="${sel// /}"
+            if [[ "$sel" =~ ^[0-9]+$ ]] && \
+               [[ "$sel" -ge 1 ]] && \
+               [[ "$sel" -le "${#archive_paths[@]}" ]]; then
+                exclude_args+=("--exclude=${archive_paths[$((sel-1))]}")
+                echo -e "  ${YELLOW}Excluding:${NC} ${archive_paths[$((sel-1))]}"
+            fi
+        done
+        echo ""
+    fi
+
     # Step 1: snapshot current state so the restore can be reverted
     echo -e "${YELLOW}--- Step 1/2: Pre-restore backup (enables revert) ---${NC}"
     echo "Target: $prerestore_path"
@@ -264,9 +303,9 @@ do_restore() {
     restore_bytes=$(du -sb "$restore_file" | cut -f1)
 
     if [[ "$PV_AVAILABLE" == true ]]; then
-        pv -s "$restore_bytes" -N "Restoring" "$restore_file" | tar -xz -C /
+        pv -s "$restore_bytes" -N "Restoring" "$restore_file" | tar -xz "${exclude_args[@]}" -C /
     else
-        tar -xzf "$restore_file" --checkpoint=100 --checkpoint-action=dot -C /
+        tar -xzf "$restore_file" "${exclude_args[@]}" --checkpoint=100 --checkpoint-action=dot -C /
         echo ""
     fi
 
