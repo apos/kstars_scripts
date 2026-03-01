@@ -46,6 +46,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 PV_AVAILABLE=false
+TREE_AVAILABLE=false
 ALL_PATHS=()
 
 # ---------------------------------------------------------------------------
@@ -63,32 +64,62 @@ check_root() {
     fi
 }
 
-check_pv() {
-    if ! command -v pv &>/dev/null; then
-        echo -e "${YELLOW}NOTE: 'pv' is not installed (required for progress bar).${NC}"
-        read -r -p "Install 'pv' now? [y/N] " response
-        if [[ "$response" =~ ^[Yy]$ ]]; then
-            echo "Installing pv..."
-            if command -v pacman &>/dev/null; then
-                pacman -S --noconfirm pv || true
-            elif command -v apt-get &>/dev/null; then
-                apt-get install -y pv || true
-            else
-                echo -e "${RED}Unknown package manager. Please install 'pv' manually.${NC}"
-            fi
-            if ! command -v pv &>/dev/null; then
-                echo -e "${RED}Installation failed. Falling back to checkpoint output.${NC}"
-                PV_AVAILABLE=false
-            else
-                echo -e "${GREEN}pv installed successfully.${NC}"
-                PV_AVAILABLE=true
-            fi
+check_deps() {
+    local missing=()
+    local -A fallback_msg=(
+        [pv]="progress bar → checkpoint dots"
+        [tree]="directory tree → plain file list"
+    )
+
+    for cmd in pv tree; do
+        if command -v "$cmd" &>/dev/null; then
+            case "$cmd" in
+                pv)   PV_AVAILABLE=true   ;;
+                tree) TREE_AVAILABLE=true  ;;
+            esac
         else
-            echo "Skipping installation. Falling back to checkpoint output."
-            PV_AVAILABLE=false
+            missing+=("$cmd")
         fi
+    done
+
+    if [[ ${#missing[@]} -eq 0 ]]; then
+        echo -e "${GREEN}All optional dependencies present (pv, tree).${NC}"
+        return
+    fi
+
+    echo -e "${YELLOW}Missing optional tools:${NC}"
+    for cmd in "${missing[@]}"; do
+        echo -e "  - $cmd  (fallback: ${fallback_msg[$cmd]})"
+    done
+    echo ""
+    read -r -p "Install ${missing[*]}? [y/N] " response
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+        local pkg_cmd=()
+        if command -v pacman &>/dev/null; then
+            pkg_cmd=(pacman -S --noconfirm)
+        elif command -v apt-get &>/dev/null; then
+            pkg_cmd=(apt-get install -y)
+        else
+            echo -e "${RED}Unknown package manager. Please install manually: ${missing[*]}${NC}"
+            return
+        fi
+        echo "Installing ${missing[*]}..."
+        "${pkg_cmd[@]}" "${missing[@]}" || true
+
+        # Re-check what actually got installed
+        for cmd in "${missing[@]}"; do
+            if command -v "$cmd" &>/dev/null; then
+                echo -e "  ${GREEN}$cmd installed.${NC}"
+                case "$cmd" in
+                    pv)   PV_AVAILABLE=true   ;;
+                    tree) TREE_AVAILABLE=true  ;;
+                esac
+            else
+                echo -e "  ${RED}$cmd installation failed — using fallback.${NC}"
+            fi
+        done
     else
-        PV_AVAILABLE=true
+        echo "Skipping. Fallbacks will be used."
     fi
 }
 
@@ -190,7 +221,11 @@ make_archive() {
     echo "Compression ratio: ${compression_ratio}%"
     echo ""
     echo "Contents (directory tree):"
-    tar -tzf "$output_path" | tree --fromfile -a
+    if [[ "$TREE_AVAILABLE" == true ]]; then
+        tar -tzf "$output_path" | tree --fromfile -a
+    else
+        tar -tzf "$output_path"
+    fi
 }
 
 # ---------------------------------------------------------------------------
@@ -259,9 +294,15 @@ do_restore() {
         tar -tzf "$restore_file" \
         | sed 's|^[./]*||; s|/$||' \
         | awk -F/ '{
-            if ($1=="home" && NF>=3) key=$1"/"$2"/"$3
-            else if (NF>=2)         key=$1"/"$2
-            else                    key=$1
+            if ($1=="home") {
+                if (NF>=3) key=$1"/"$2"/"$3
+                else next
+            } else if ($1=="etc") {
+                if (NF>=2) key=$1"/"$2
+                else next
+            } else if (NF>=1) {
+                key=$1
+            } else next
             print key
           }' \
         | sort -u \
@@ -324,7 +365,7 @@ MODE="${1:-backup}"
 mkdir -p "$BACKUP_DIR"
 check_root
 echo ""
-check_pv
+check_deps
 echo ""
 
 case "$MODE" in
