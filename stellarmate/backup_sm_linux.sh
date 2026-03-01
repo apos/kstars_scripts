@@ -314,7 +314,7 @@ do_restore() {
     echo "Restored from:      $restore_file"
     echo "Pre-restore backup: $prerestore_path"
     echo ""
-    echo -e "To revert: ${YELLOW}sudo $0 restore $prerestore_path${NC}"
+    echo -e "To revert: ${YELLOW}sudo $0 restore${NC}  and select $(basename "$prerestore_path")"
 }
 
 # ---------------------------------------------------------------------------
