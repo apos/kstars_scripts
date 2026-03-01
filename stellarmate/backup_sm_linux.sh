@@ -1,0 +1,302 @@
+#!/bin/bash
+# stellarmate_backup.sh
+
+set -euo pipefail
+
+# --- Determine the original user (not root) ---
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+
+# --- Configuration ---
+BACKUP_DIR="$REAL_HOME/Documents/backup_files"
+
+# --- Core paths (always backed up) ---
+CORE_PATHS=(
+    /etc/hosts
+    /etc/NetworkManager/system-connections
+    "$REAL_HOME/Documents/sequences"
+    "$REAL_HOME/Documents/scheduler"
+    "$REAL_HOME/.indi"
+    "$REAL_HOME/.config/autostart"
+    "$REAL_HOME/.config/kstars"
+    "$REAL_HOME/.config/kstarsrc"
+    "$REAL_HOME/.config/kstars.kmessagebox"
+    "$REAL_HOME/.config/kstars.notifyrc"
+    "$REAL_HOME/.local/share/ekoslive"
+    "$REAL_HOME/.local/share/kstars"
+    "$REAL_HOME/.ssh"
+)
+
+# --- Optional paths (backed up if present) ---
+OPTIONAL_PATHS=(
+    "$REAL_HOME/.config/kstarsrc.lock"
+    "$REAL_HOME/.phd2"
+    "$REAL_HOME/.ZWO"
+    "$REAL_HOME/.PHDGuidingV2"
+    "$REAL_HOME/FireCapture"
+    "$REAL_HOME/.astropy"
+    "$REAL_HOME/.java"
+    "$REAL_HOME/bin"
+)
+
+# --- Colors ---
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+PV_AVAILABLE=false
+ALL_PATHS=()
+
+# ---------------------------------------------------------------------------
+
+usage() {
+    echo "Usage: sudo $0 [backup]"
+    echo "       sudo $0 restore"
+}
+
+check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        echo -e "${RED}ERROR: This script requires root privileges (sudo) for /etc/ paths.${NC}"
+        usage
+        exit 1
+    fi
+}
+
+check_pv() {
+    if ! command -v pv &>/dev/null; then
+        echo -e "${YELLOW}NOTE: 'pv' is not installed (required for progress bar).${NC}"
+        read -r -p "Install 'pv' now? [y/N] " response
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+            echo "Installing pv..."
+            if command -v pacman &>/dev/null; then
+                pacman -S --noconfirm pv
+            elif command -v apt-get &>/dev/null; then
+                apt-get install -y pv
+            else
+                echo -e "${RED}Unknown package manager. Please install 'pv' manually.${NC}"
+            fi
+            if ! command -v pv &>/dev/null; then
+                echo -e "${RED}Installation failed. Falling back to checkpoint output.${NC}"
+                PV_AVAILABLE=false
+            else
+                echo -e "${GREEN}pv installed successfully.${NC}"
+                PV_AVAILABLE=true
+            fi
+        else
+            echo "Skipping installation. Falling back to checkpoint output."
+            PV_AVAILABLE=false
+        fi
+    else
+        PV_AVAILABLE=true
+    fi
+}
+
+# collect_paths [strict|lenient]
+#   strict  (default): aborts if any core path is missing
+#   lenient           : warns about missing core paths but continues with what exists
+# Sets the global ALL_PATHS array.
+collect_paths() {
+    local mode="${1:-strict}"
+
+    echo "Checking core paths..."
+    local missing_core=()
+    local found_core=()
+    for path in "${CORE_PATHS[@]}"; do
+        if [[ ! -e "$path" ]]; then
+            missing_core+=("$path")
+            echo -e "  ${RED}MISSING:${NC} $path"
+        else
+            found_core+=("$path")
+            echo -e "  ${GREEN}OK:${NC}      $path"
+        fi
+    done
+
+    if [[ ${#missing_core[@]} -gt 0 ]]; then
+        if [[ "$mode" == strict ]]; then
+            echo ""
+            echo -e "${RED}ABORTED: ${#missing_core[@]} core path(s) missing. Backup will not be created.${NC}"
+            exit 1
+        else
+            echo -e "  ${YELLOW}WARNING: ${#missing_core[@]} core path(s) missing — skipped in pre-restore backup.${NC}"
+        fi
+    fi
+
+    echo ""
+    echo "Checking optional paths..."
+    local found_optional=()
+    for path in "${OPTIONAL_PATHS[@]}"; do
+        if [[ -e "$path" ]]; then
+            found_optional+=("$path")
+            echo -e "  ${GREEN}FOUND:${NC}   $path"
+        else
+            echo -e "  ${YELLOW}SKIPPED (not present):${NC} $path"
+        fi
+    done
+
+    ALL_PATHS=("${found_core[@]}" "${found_optional[@]}")
+}
+
+# make_archive <output_path>
+# Creates a compressed archive of ALL_PATHS to output_path.
+make_archive() {
+    local output_path="$1"
+
+    echo ""
+    echo "Estimating backup size..."
+    local raw_bytes raw_human estimated_bytes estimated_human avail_bytes avail_human
+    raw_bytes=$(du -sbc "${ALL_PATHS[@]}" 2>/dev/null | tail -1 | cut -f1)
+    raw_human=$(du -shc "${ALL_PATHS[@]}" 2>/dev/null | tail -1 | cut -f1)
+    estimated_bytes=$(( raw_bytes / 2 ))
+    estimated_human=$(numfmt --to=iec --suffix=B "$estimated_bytes")
+    avail_bytes=$(df -B1 "$BACKUP_DIR" | awk 'NR==2 {print $4}')
+    avail_human=$(df -h "$BACKUP_DIR" | awk 'NR==2 {print $4}')
+
+    echo "  Uncompressed data:      $raw_human"
+    echo "  Estimated archive size: ~$estimated_human  (assuming ~50% compression)"
+    echo "  Available disk space:   $avail_human"
+
+    local estimated_with_margin=$(( estimated_bytes + estimated_bytes / 10 ))
+    if [[ $avail_bytes -lt $estimated_with_margin ]]; then
+        echo ""
+        echo -e "${RED}ERROR: Insufficient disk space.${NC}"
+        echo "  Required (est. + 10% margin): $(numfmt --to=iec --suffix=B "$estimated_with_margin")"
+        echo "  Available:                    $avail_human"
+        exit 1
+    else
+        echo -e "  ${GREEN}Disk space OK.${NC}"
+    fi
+
+    echo ""
+    echo "Creating archive: $(basename "$output_path")..."
+    if [[ "$PV_AVAILABLE" == true ]]; then
+        tar -cz "${ALL_PATHS[@]}" | pv -s "$raw_bytes" > "$output_path"
+    else
+        tar -czf "$output_path" --checkpoint=100 --checkpoint-action=dot "${ALL_PATHS[@]}"
+        echo ""
+    fi
+
+    local actual_size actual_bytes compression_ratio
+    actual_size=$(du -sh "$output_path" | cut -f1)
+    actual_bytes=$(du -sb "$output_path" | cut -f1)
+    compression_ratio=$(awk "BEGIN {printf \"%.1f\", (1 - $actual_bytes / $raw_bytes) * 100}")
+
+    echo ""
+    echo -e "${GREEN}=== Archive complete ===${NC}"
+    echo "File:              $output_path"
+    echo "Actual size:       $actual_size"
+    echo "Estimated size:    ~$estimated_human"
+    echo "Compression ratio: ${compression_ratio}%"
+    echo ""
+    echo "Contents (directory tree):"
+    tar -tzf "$output_path" | tree --fromfile -a
+}
+
+# ---------------------------------------------------------------------------
+
+do_backup() {
+    local backup_path="$BACKUP_DIR/stellarmate_backup_$(date +%Y%m%d_%H%M).tar.gz"
+
+    echo -e "${GREEN}=== StellarMate Backup ===${NC}"
+    echo "User:   $REAL_USER ($REAL_HOME)"
+    echo "Target: $backup_path"
+    echo ""
+
+    collect_paths strict
+    make_archive "$backup_path"
+}
+
+do_restore() {
+    echo -e "${GREEN}=== StellarMate Restore ===${NC}"
+    echo "User:       $REAL_USER ($REAL_HOME)"
+    echo "Backup dir: $BACKUP_DIR"
+    echo ""
+
+    # List available backups, newest first
+    local files=()
+    while IFS= read -r f; do
+        files+=("$f")
+    done < <(ls -t "$BACKUP_DIR"/stellarmate_*.tar.gz 2>/dev/null || true)
+
+    if [[ ${#files[@]} -eq 0 ]]; then
+        echo -e "${RED}No backups found in $BACKUP_DIR${NC}"
+        exit 1
+    fi
+
+    echo "Available backups (newest first):"
+    for i in "${!files[@]}"; do
+        local fname size
+        fname=$(basename "${files[$i]}")
+        size=$(du -sh "${files[$i]}" | cut -f1)
+        printf "  %2d)  %-52s  %s\n" "$((i+1))" "$fname" "$size"
+    done
+    echo ""
+
+    read -r -p "Select backup to restore [1]: " selection
+    selection="${selection:-1}"
+
+    if ! [[ "$selection" =~ ^[0-9]+$ ]] || \
+       [[ "$selection" -lt 1 ]] || \
+       [[ "$selection" -gt "${#files[@]}" ]]; then
+        echo -e "${RED}Invalid selection.${NC}"
+        exit 1
+    fi
+
+    local restore_file="${files[$((selection-1))]}"
+    local prerestore_path="$BACKUP_DIR/stellarmate_prerestore_$(date +%Y%m%d_%H%M).tar.gz"
+
+    echo ""
+    echo "Restore from: $(basename "$restore_file")"
+    echo ""
+
+    # Step 1: snapshot current state so the restore can be reverted
+    echo -e "${YELLOW}--- Step 1/2: Pre-restore backup (enables revert) ---${NC}"
+    echo "Target: $prerestore_path"
+    echo ""
+    collect_paths lenient
+    make_archive "$prerestore_path"
+
+    # Step 2: extract the requested archive to /
+    echo ""
+    echo -e "${YELLOW}--- Step 2/2: Restoring from archive ---${NC}"
+    local restore_bytes
+    restore_bytes=$(du -sb "$restore_file" | cut -f1)
+
+    if [[ "$PV_AVAILABLE" == true ]]; then
+        pv -s "$restore_bytes" -N "Restoring" "$restore_file" | tar -xz -C /
+    else
+        tar -xzf "$restore_file" --checkpoint=100 --checkpoint-action=dot -C /
+        echo ""
+    fi
+
+    echo ""
+    echo -e "${GREEN}=== Restore complete ===${NC}"
+    echo "Restored from:      $restore_file"
+    echo "Pre-restore backup: $prerestore_path"
+    echo ""
+    echo -e "To revert: ${YELLOW}sudo $0 restore $prerestore_path${NC}"
+}
+
+# ---------------------------------------------------------------------------
+
+MODE="${1:-backup}"
+
+mkdir -p "$BACKUP_DIR"
+check_root
+echo ""
+check_pv
+echo ""
+
+case "$MODE" in
+    backup)
+        do_backup
+        ;;
+    restore)
+        do_restore
+        ;;
+    *)
+        echo -e "${RED}ERROR: Unknown mode '$MODE'${NC}"
+        usage
+        exit 1
+        ;;
+esac
