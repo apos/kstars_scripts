@@ -58,9 +58,27 @@ Launch with:
 open ~/CraftRoot/Applications/KDE/KStars.app/Contents/MacOS/kstars
 ```
 
-## Status
+## Status: works
 
-In progress — this README will be updated with what we actually hit once the build runs far enough to
-tell. Forum thread reports ~30 minutes on an M1 iMac; expect roughly that ballpark or better on M4 Pro,
-but Qt6/KDE Frameworks 6 is a large dependency chain and first-run numbers are unreliable until confirmed
-here.
+Confirmed working end-to-end on the environment above:
+
+- `python3 setup.py --prefix ~/CraftRoot --use-defaults` bootstrapped Craft with `ABI: macos-clang-arm64`
+  with no manual architecture selection needed (`--use-defaults` is required to avoid it blocking on stdin
+  when run non-interactively — the interactive prompt defaults to arm64 anyway).
+- The `libftdi` patch above was applied preemptively; unclear whether it was still actually needed with
+  the current `craft-blueprints-kde` (the blueprint already had a dynamic `buildTests` option we
+  overrode instead of a hardcoded `ON`), but it didn't hurt and `libftdi` built fine.
+- `craft kstars` ran clean, no failed packages, total **~24 minutes** wall time (bootstrap + `craft kstars`
+  combined) on the M4 Pro above — most dependencies came down as prebuilt arm64 binaries from KDE's cache
+  rather than compiling from source, only INDI/KStars itself and a handful of others actually compiled.
+- Resulting binary confirmed native:
+  ```
+  $ file ~/CraftRoot/Applications/KDE/KStars.app/Contents/MacOS/kstars
+  Mach-O 64-bit executable arm64
+  ```
+- Launches fine via `open ~/CraftRoot/Applications/KDE/KStars.app`. KStars version 3.8.4.
+
+No workarounds beyond the `libftdi` patch were needed — no equivalent of the `indiserver` renaming issue
+or the arm64/x86_64 mismatch problems documented in
+[`../kstars-on-osx-craft/`](../kstars-on-osx-craft/), because this approach never introduces a
+cross-architecture bootstrap in the first place.
