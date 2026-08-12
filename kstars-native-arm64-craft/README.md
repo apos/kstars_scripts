@@ -58,6 +58,70 @@ Launch with:
 open ~/CraftRoot/Applications/KDE/KStars.app/Contents/MacOS/kstars
 ```
 
+## Building a distributable .dmg
+
+Craft has a built-in packaging action, no need for a hand-rolled `macdeployqt` + `hdiutil` script like
+`kstars-on-osx-craft/generate-dmg-KStars.sh`:
+
+```bash
+craft --package kstars
+```
+
+This bundles all dependencies into a copy of the app (`install_name_tool`-rewriting library paths so it's
+self-contained), builds the `.dmg` via `dmgbuild`, and drops it in `$CRAFT_PREFIX/tmp/`, e.g.:
+
+```
+~/CraftRoot/tmp/kstars-stable-3.8.4-<hash>-3.8.4-macos-clang-arm64.dmg
+```
+
+Took about 2m45s on the environment above, ~196 MB. The DMG'd copy is genuinely self-contained (Qt's
+`cocoa` platform plugin and a `qt.conf` get bundled in) — unlike the app sitting directly in
+`$CRAFT_PREFIX/Applications/KDE/`, which relies on `QT_PLUGIN_PATH` from `source craftenv.sh` and won't
+launch standalone (see the gotcha below, though it's a different symptom than that one).
+
+## Known gotcha: stale D-Bus launchd registrations block startup with no useful error
+
+KStars registers a per-user macOS `launchd` LaunchAgent for its private D-Bus session
+(`~/Library/LaunchAgents/org.freedesktop.dbus-kstars.plist`, label `org.freedesktop.dbus-kstars`) — and
+there's a second one for the general D-Bus session bus, `org.freedesktop.dbus-session`. Both plists get
+**rewritten with whatever bundle path launched them**, and `launchd` **caches the job definition at load
+time** — deleting or editing the plist file does nothing to an already-loaded job.
+
+Symptom: KStars starts, prints normal startup logging, then hangs forever right after:
+
+```
+Trying to Setup DBus
+DBus Setup Succeeded.  Trying to Start DBus
+Load failed: 5: Input/output error
+Try running `launchctl bootstrap` as root for richer errors.
+DBus Started
+```
+
+No window ever appears, 0% CPU, no crash, no further output. This happens if:
+
+- an **older KStars install** (e.g. the Homebrew cask, or a previous Craft build you later deleted)
+  already registered one of these labels pointing at a binary that no longer exists, or
+- you deleted/moved a `CraftRoot` that still has a job registered in `launchd`'s runtime state.
+
+Diagnose with:
+
+```bash
+launchctl list org.freedesktop.dbus-kstars
+launchctl list org.freedesktop.dbus-session
+# check the "Program" path in the output actually exists
+```
+
+Fix — unload the stale job (not just delete the plist, that alone doesn't touch the already-loaded job):
+
+```bash
+launchctl bootout gui/$(id -u)/org.freedesktop.dbus-kstars
+launchctl bootout gui/$(id -u)/org.freedesktop.dbus-session
+rm -f ~/Library/LaunchAgents/org.freedesktop.dbus-kstars.plist
+```
+
+Then relaunch KStars — it re-registers a fresh, correct job pointing at wherever you actually launched it
+from. `install.sh` in this folder checks for and cleans this up automatically before building/launching.
+
 ## Status: works
 
 Confirmed working end-to-end on the environment above:
@@ -76,9 +140,24 @@ Confirmed working end-to-end on the environment above:
   $ file ~/CraftRoot/Applications/KDE/KStars.app/Contents/MacOS/kstars
   Mach-O 64-bit executable arm64
   ```
-- Launches fine via `open ~/CraftRoot/Applications/KDE/KStars.app`. KStars version 3.8.4.
+- `craft --package kstars` produced a working, self-contained ~196 MB `.dmg` in ~2m45s.
+- First launch attempt hung on the D-Bus startup gotcha documented above (a stale registration left over
+  from testing multiple KStars installs — Homebrew cask, a deleted x86_64 CraftRoot, a temp copy — in the
+  same session). `launchctl bootout` on both stale labels + removing the plist fixed it immediately;
+  KStars then opened a real window, loaded DSO/star/comet catalogs, and ran normally. This is an
+  environment-hygiene issue, not a bug in the build itself, but likely to bite anyone who's tried more than
+  one KStars build/install on the same Mac.
+- No workarounds beyond the `libftdi` patch were needed for the build itself — no equivalent of the
+  `indiserver` renaming issue or the arm64/x86_64 mismatch problems documented in
+  [`../kstars-on-osx-craft/`](../kstars-on-osx-craft/), because this approach never introduces a
+  cross-architecture bootstrap in the first place.
 
-No workarounds beyond the `libftdi` patch were needed — no equivalent of the `indiserver` renaming issue
-or the arm64/x86_64 mismatch problems documented in
-[`../kstars-on-osx-craft/`](../kstars-on-osx-craft/), because this approach never introduces a
-cross-architecture bootstrap in the first place.
+## install.sh
+
+[`install.sh`](./install.sh) automates all of the above: bootstrap, `libftdi` patch, stale-D-Bus-job
+cleanup, `craft kstars`, `craft --package kstars`. Re-running it is safe — already-done steps are skipped.
+
+```bash
+./install.sh                              # installs to ~/CraftRoot
+CRAFT_PREFIX=/other/path ./install.sh     # or elsewhere
+```
