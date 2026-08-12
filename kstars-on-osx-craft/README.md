@@ -118,7 +118,11 @@ what hardware you're targeting.
 
 ## Status upstream
 
-Filed as [an issue against rlancaste/kstars-on-osx-craft](../../../../issues) (link filled in once created)
-offering to submit Bug 1 as a PR — it's a small, unambiguous rename fix. Bug 2 is specific to how an
-individual `craft-root` was bootstrapped, so it's not something a PR against the script itself can really
-fix; it's documented here for the next person who searches the error message.
+Tracked so far only in this repo: [apos/kstars_scripts#1](https://github.com/apos/kstars_scripts/issues/1).
+**No issue or PR has been filed against `rlancaste/kstars-on-osx-craft` yet** — that's a deliberate,
+separate decision, not done yet.
+
+Bug 1 (the rename) is small and unambiguous enough to be a clean PR against the upstream script, if/when
+that's decided. Bug 2 is specific to how an individual `craft-root` was bootstrapped, so it's not something
+a PR against the script itself can really fix; it's documented here for the next person who searches the
+error message.
