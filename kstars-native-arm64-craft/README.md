@@ -122,6 +122,53 @@ rm -f ~/Library/LaunchAgents/org.freedesktop.dbus-kstars.plist
 Then relaunch KStars — it re-registers a fresh, correct job pointing at wherever you actually launched it
 from. `install.sh` in this folder checks for and cleans this up automatically before building/launching.
 
+## Which copy do I actually run — and which one is "installed"?
+
+A Craft build produces several `kstars.app` copies (build work dir, `image-RelWithDebInfo-*` intermediate,
+`archive` copy used for packaging, and the final `$CRAFT_PREFIX/Applications/KDE/kstars.app`). None of
+those are meant for daily use:
+
+- `$CRAFT_PREFIX/Applications/KDE/kstars.app` relies on `QT_PLUGIN_PATH` etc. from
+  `source $CRAFT_PREFIX/craft/craftenv.sh` — launch it without that sourced and it hangs identically to the
+  D-Bus gotcha above (missing `libqcocoa` platform plugin, no window ever appears).
+- The **DMG-packaged copy is the real deliverable** — self-contained, installable to `/Applications` like
+  any other Mac app, works for other users/machines with no Craft install at all.
+
+`install.sh` copies the DMG's app to `/Applications/kstars.app` as the last step and unregisters the other
+copies from `launchservicesd`. Do the same if you're doing this by hand: macOS's LaunchServices keys apps by
+bundle identifier (`org.kde.kstars`, shared by every copy — and by the Homebrew cask, if you have that
+installed too), so more than one registered copy makes `open -a KStars`, Spotlight, and Dock/Finder resolve
+unpredictably to whichever one LaunchServices feels like that day. Same root cause class as the D-Bus
+gotcha (a macOS system service keyed by a fixed identifier, oblivious to which of several installs is
+"current"), just a different subsystem:
+
+```bash
+# see what's currently registered for this bundle ID
+lsregister=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
+"$lsregister" -dump 2>/dev/null | grep -B15 "org.kde.kstars$" | grep -E "^\s*path:"
+
+# drop everything except the one you actually want registered
+"$lsregister" -u /path/to/stale/kstars.app
+```
+
+If you also have the **Homebrew cask** (`brew install --cask kstars`, x86_64/Rosetta) installed, it
+registers the exact same bundle ID too. Decide on one; running both isn't useful (the whole point of this
+folder is to replace that Rosetta build), and having both around is exactly the kind of duplicate-identifier
+mess described above. `brew uninstall --cask kstars` removes it and its own `launchctl` D-Bus registration.
+
+## Updating to a newer KStars
+
+```bash
+source ~/CraftRoot/craft/craftenv.sh
+craft --check-for-updates kstars   # tells you if craft-blueprints-kde has a newer version
+craft kstars                       # rebuilds if so — same command as the initial build
+craft --package kstars             # fresh .dmg
+# then replace /Applications/kstars.app with the new DMG's copy, as in "Which copy" above
+```
+
+Or just re-run [`install.sh`](./install.sh) — it does all of this, including the `/Applications` swap and
+LaunchServices cleanup, and skips the bootstrap/patch steps since they're already done.
+
 ## Status: works
 
 Confirmed working end-to-end on the environment above:

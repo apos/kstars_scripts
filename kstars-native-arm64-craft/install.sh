@@ -97,8 +97,11 @@ done
 rm -f "$HOME/Library/LaunchAgents/org.freedesktop.dbus-kstars.plist.stale-check" 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
-# 4. Build KStars (pulls in INDI automatically)
+# 4. Build/update KStars (pulls in INDI automatically)
 # ---------------------------------------------------------------------------
+log "Checking for a newer KStars"
+craft --check-for-updates kstars || true
+
 log "Building KStars (this resolves and builds INDI as a dependency automatically)"
 craft kstars
 
@@ -113,10 +116,44 @@ if [[ -z "$DMG" ]]; then
 	DMG=$(find "$CRAFT_PREFIX/tmp" -maxdepth 1 -iname "kstars-*.dmg" 2>/dev/null | sort | tail -1)
 fi
 
+# ---------------------------------------------------------------------------
+# 6. Install/update the self-contained app in /Applications
+# ---------------------------------------------------------------------------
+# This is the one you actually run day to day — no craft environment needed.
+# $CRAFT_PREFIX/Applications/KDE/kstars.app is a build artifact, not meant to
+# be launched directly; keeping both registered with macOS causes duplicate
+# org.kde.kstars LaunchServices entries and unpredictable `open -a KStars`
+# behavior (see README's "Known gotcha" section — same root cause class as
+# the D-Bus one, just for LaunchServices instead of launchd).
+LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
+if [[ -n "$DMG" ]]; then
+	log "Installing the built app to /Applications/kstars.app"
+	MOUNT_DIR=$(mktemp -d /tmp/kstars-dmg-mount.XXXXXX)
+	hdiutil attach "$DMG" -nobrowse -mountpoint "$MOUNT_DIR" >/dev/null
+	rm -rf /Applications/kstars.app
+	cp -R "$MOUNT_DIR/kstars.app" /Applications/kstars.app
+	xattr -cr /Applications/kstars.app
+	hdiutil detach "$MOUNT_DIR" >/dev/null
+
+	# Keep LaunchServices pointed at exactly one copy: /Applications/kstars.app.
+	if [[ -x "$LSREGISTER" ]]; then
+		for stale in \
+			"$CRAFT_PREFIX/Applications/KDE/kstars.app" \
+			"$CRAFT_PREFIX/build/kde/applications/kstars/archive/Applications/KDE/kstars.app" \
+			"$CRAFT_PREFIX/build/kde/applications/kstars/image-RelWithDebInfo-"*"/Applications/KDE/kstars.app" \
+			"$CRAFT_PREFIX/build/kde/applications/kstars/work/build/kstars/KStars.app"; do
+			[[ -e "$stale" ]] && "$LSREGISTER" -u "$stale" 2>/dev/null || true
+		done
+	fi
+fi
+
 log "Done"
-echo "App (needs \`source $CRAFT_PREFIX/craft/craftenv.sh\` first, for QT_PLUGIN_PATH):"
+echo "Installed app (this is the one to launch day to day, no craft environment needed):"
+echo "  /Applications/kstars.app"
+echo ""
+echo "Raw build output (dev use only — needs \`source $CRAFT_PREFIX/craft/craftenv.sh\` first"
+echo "for QT_PLUGIN_PATH; don't launch this directly for normal use):"
 echo "  $CRAFT_PREFIX/Applications/KDE/kstars.app"
 echo ""
-echo "Self-contained DMG (no craft environment needed, this is the one to give to"
-echo "someone else or just drag into /Applications):"
+echo "DMG file itself:"
 echo "  ${DMG:-<not found — check $CRAFT_PREFIX/tmp manually>}"
