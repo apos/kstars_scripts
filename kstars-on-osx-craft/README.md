@@ -10,6 +10,18 @@ Failed to find indiserver:
 Craft was unable to find indiserver
 ```
 
+## Tested environment
+
+- macOS 26.6 (Tahoe), build 25G72
+- MacBook Pro, Apple M4 Pro (Mac16,7), 14 cores (10P+4E), 24 GB RAM
+- Xcode Command Line Tools 26.6.0 (no full Xcode installed)
+- Homebrew 6.0.17
+- Craft build ABI: `macos-clang-x86_64` — i.e. built for Intel/Rosetta even though the hardware is Apple
+  Silicon. This is the documented, tested target for this script (see the
+  [macobservatory build writeup](https://macobservatory.com/kstars-ekos-apple-silicon-mac-build-2026/));
+  native arm64 builds via this script are known to hit separate `ld: symbol(s) not found for architecture
+  arm64` errors and aren't what this fix addresses.
+
 This folder documents the two real, independent bugs behind that message and one follow-up issue, plus a
 script (`fix-script.sh`) that patches the first two automatically.
 
