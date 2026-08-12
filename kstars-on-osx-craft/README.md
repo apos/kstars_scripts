@@ -1,4 +1,17 @@
-# Fix for rlancaste/kstars-on-osx-craft (Aug 2026)
+# Fix for rlancaste/kstars-on-osx-craft (Aug 2026) — SUPERSEDED, WRONG TRACK
+
+> **This whole approach builds for x86_64/Rosetta, not native Apple Silicon.** That was not the actual
+> goal — Homebrew already ships an x86_64 KStars build (`brew install --cask kstars`, runs under Rosetta),
+> so reproducing that via a from-source Craft build adds no value. The two bugs documented below are real
+> and the fixes work, but only get you to the same place `brew` already gets you.
+>
+> The actual goal — a **native arm64** build — turns out to need a completely different approach: bootstrap
+> plain KDE Craft directly (no wrapper script) and let it default to arm64, per
+> [this indilib.org forum thread](https://indilib.org/forum/ekos/16006-kstars-ekos-apple-silicon-to-whom-it-might-concern.html).
+> See [`../kstars-native-arm64-craft/`](../kstars-native-arm64-craft/) for that attempt. Keeping this
+> folder around because the two bugs and their root causes are still accurate documentation of
+> `rlancaste/kstars-on-osx-craft` specifically, in case anyone actually wants an x86_64 build from source
+> for some reason (e.g. testing, or a non-Apple-Silicon Mac).
 
 [rlancaste/kstars-on-osx-craft](https://github.com/rlancaste/kstars-on-osx-craft) builds INDI + KStars on
 macOS via [KDE Craft](https://community.kde.org/Craft). The repo's last commit is from Feb 2024; the
