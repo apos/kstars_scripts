@@ -166,8 +166,9 @@ craft --package kstars             # fresh .dmg
 # then replace /Applications/kstars.app with the new DMG's copy, as in "Which copy" above
 ```
 
-Or just re-run [`install.sh`](./install.sh) — it does all of this, including the `/Applications` swap and
-LaunchServices cleanup, and skips the bootstrap/patch steps since they're already done.
+Or run [`update_kstars.sh`](./update_kstars.sh) — same three commands plus the `/Applications` swap and
+LaunchServices cleanup, split out from `install.sh` for when Craft is already bootstrapped and you just
+want to update. (Re-running [`install.sh`](./install.sh) works too — it's idempotent and includes this.)
 
 ## Status: works
 
