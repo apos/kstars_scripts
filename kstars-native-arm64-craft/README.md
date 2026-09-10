@@ -151,6 +151,16 @@ lsregister=/System/Library/Frameworks/CoreServices.framework/Versions/A/Framewor
 "$lsregister" -u /path/to/stale/kstars.app
 ```
 
+`install.sh`/`update_kstars.sh` do this by enumerating every `kstars.app` under `$CRAFT_PREFIX`
+(`find "$CRAFT_PREFIX" -type d -iname kstars.app`) rather than a hardcoded list — the exact set of
+build-intermediate copies (`archive`, `archive-dbg`, `image-RelWithDebInfo-*`, `work/build/bin`,
+`work/build/kstars`, …) shifts between Craft/KStars versions. They also drop a
+`$CRAFT_PREFIX/.metadata_never_index` file so **Spotlight** ignores the whole build tree — otherwise
+`lsregister -u` clears the LaunchServices entry but the mds index keeps showing the stale copies in
+Cmd-Space results until the next reindex. To purge entries already indexed:
+`sudo mdutil -E ~/CraftRoot`, or add `~/CraftRoot` to System Settings → Spotlight → Search Privacy
+(which purges immediately).
+
 If you also have the **Homebrew cask** (`brew install --cask kstars`, x86_64/Rosetta) installed, it
 registers the exact same bundle ID too. Decide on one; running both isn't useful (the whole point of this
 folder is to replace that Rosetta build), and having both around is exactly the kind of duplicate-identifier
