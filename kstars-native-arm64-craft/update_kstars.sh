@@ -62,6 +62,22 @@ cp -R "$MOUNT_DIR/kstars.app" /Applications/kstars.app
 xattr -cr /Applications/kstars.app
 hdiutil detach "$MOUNT_DIR" >/dev/null
 
+# Recycle KStars' private D-Bus launchd job (see README's "Known gotcha"). The
+# job caches the *code requirement* of the binary it was registered against, so
+# even though the path (/Applications/kstars.app/.../dbus-daemon) is unchanged,
+# the just-swapped binary is a different build and the cached job goes stale
+# ("needs LWCR update") — next launch then hangs after "DBus Started" with no
+# window. install.sh's pre-build check only catches a *missing* Program path;
+# here the path stays valid, so recycle unconditionally after every swap.
+UID_NUM=$(id -u)
+launchctl bootout "gui/$UID_NUM/org.freedesktop.dbus-kstars" 2>/dev/null || true
+rm -f "$HOME/Library/LaunchAgents/org.freedesktop.dbus-kstars.plist"
+# Drop a dead session-bus socket reference if the old job left one behind.
+sock=$(launchctl getenv DBUS_LAUNCHD_SESSION_BUS_SOCKET 2>/dev/null || true)
+[[ -n "$sock" && ! -S "$sock" ]] && launchctl unsetenv DBUS_LAUNCHD_SESSION_BUS_SOCKET
+# KStars re-registers a fresh, correct job pointing at /Applications/kstars.app
+# on its next launch.
+
 # Keep LaunchServices pointed at exactly one copy (/Applications/kstars.app),
 # and keep Spotlight out of the Craft build tree entirely — see README's "Which
 # copy do I actually run" section. The build-intermediate .app bundles (archive,

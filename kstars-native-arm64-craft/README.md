@@ -120,7 +120,14 @@ rm -f ~/Library/LaunchAgents/org.freedesktop.dbus-kstars.plist
 ```
 
 Then relaunch KStars — it re-registers a fresh, correct job pointing at wherever you actually launched it
-from. `install.sh` in this folder checks for and cleans this up automatically before building/launching.
+from.
+
+There's a subtler variant: the job's `Program` path is still **valid** (`/Applications/kstars.app/...`)
+but points at a **different build** than the one it was registered against — you rebuilt and swapped the
+app in place. `launchctl print gui/$(id -u)/org.freedesktop.dbus-kstars` shows `needs LWCR update` and the
+next launch still hangs. Same fix (`bootout` + remove plist + relaunch). Both `install.sh` and
+`update_kstars.sh` now do this **unconditionally right after swapping `/Applications/kstars.app`** — the
+step-3 "is the Program path missing" check alone doesn't catch this case.
 
 ## Which copy do I actually run — and which one is "installed"?
 

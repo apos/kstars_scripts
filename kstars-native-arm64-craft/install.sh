@@ -135,6 +135,17 @@ if [[ -n "$DMG" ]]; then
 	xattr -cr /Applications/kstars.app
 	hdiutil detach "$MOUNT_DIR" >/dev/null
 
+	# Recycle KStars' private D-Bus launchd job now that the app was (re)placed.
+	# The step-3 check above only unloads a job whose Program path is *missing*;
+	# after a rebuild the path is unchanged but the binary is a new build, so the
+	# job's cached code requirement goes stale ("needs LWCR update") and the next
+	# launch hangs after "DBus Started" with no window. Recycle unconditionally
+	# here — KStars re-registers a fresh, correct job on next launch.
+	launchctl bootout "gui/$UID_NUM/org.freedesktop.dbus-kstars" 2>/dev/null || true
+	rm -f "$HOME/Library/LaunchAgents/org.freedesktop.dbus-kstars.plist"
+	sock=$(launchctl getenv DBUS_LAUNCHD_SESSION_BUS_SOCKET 2>/dev/null || true)
+	[[ -n "$sock" && ! -S "$sock" ]] && launchctl unsetenv DBUS_LAUNCHD_SESSION_BUS_SOCKET
+
 	# Keep LaunchServices pointed at exactly one copy (/Applications/kstars.app),
 	# and keep Spotlight out of the Craft build tree entirely. The build-
 	# intermediate .app bundles (archive, archive-dbg, image-RelWithDebInfo-*,
